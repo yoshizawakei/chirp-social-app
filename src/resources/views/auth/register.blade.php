@@ -10,7 +10,7 @@
         <form method="post" action="/register" class="register-form" novalidate>
             @csrf
             <div class="form-group">
-                <label for="name" class="form-label">ユーザー名</label>
+                <label for="name" class="form-label">名前</label>
                 <input id="name" type="text" class="form-control" name="name"
                     value="{{ old('name') }}" autocomplete="name" autofocus>
                 @error('name')
@@ -41,7 +41,7 @@
             </div>
 
             <div class="form-group">
-                <label for="password-confirm" class="form-label">確認用パスワード</label>
+                <label for="password-confirm" class="form-label">パスワード確認</label>
                 <input id="password-confirm" type="password" class="form-control" name="password_confirmation" autocomplete="new-password">
                 @error('password_confirmation')
                     <span class="error-message" role="alert">

@@ -1,5 +1,5 @@
 .container {
-    background-color: #fff;
+    background-color: #FFFFFF;
     padding: 40px;
     text-align: center;
     max-width: 700px;
@@ -9,15 +9,16 @@
 }
 
 .status-message {
-    background-color: #e3f2fd;
-    color: #1e88e5;
+    background-color: #FFFFFF;
+    color: #0073CC;
     padding: 15px;
     border-radius: 6px;
     margin-bottom: 20px;
 }
 
 .message {
-    color: #333;
+    color: #000000;
+    font-weight: bold;
     font-size: 1.1em;
     line-height: 1.6;
     margin-bottom: 30px;
@@ -30,11 +31,13 @@
 .main-button {
     display: inline-block;
     background-color: #D9D9D9;
-    color: #000;
+    color: #000000;
     padding: 12px 30px;
-    border-radius: 3px;
+    border: #000000 1px solid;
+    border-radius: 10px;
     text-decoration: none;
     font-size: 1.1em;
+    font-weight: bold;
     transition: background-color 0.3s ease;
 }
 
@@ -53,7 +56,7 @@
 .resend-link {
     background: none;
     border: none;
-    color: #007bff;
+    color: #0073CC;
     text-decoration: none;
     cursor: pointer;
     font-size: 0.95em;
@@ -63,7 +66,7 @@
 }
 
 .resend-link:hover {
-    color: #0056b3;
+    color: #005999;
 }
 
 .inline-block {

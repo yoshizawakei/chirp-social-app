@@ -1,12 +1,5 @@
 <?php
 
-use App\Http\Controllers\ItemController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CommentController;
-use App\Http\Controllers\LikeController;
-use App\Http\Controllers\MylistController;
-use App\Http\Controllers\MypageController;
-
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Mail\TestMail;
@@ -21,6 +14,7 @@ use App\Mail\TestMail;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 
 // トップページ関係
 Route::get("/", [ItemController::class, "index"])->name("top.index");
