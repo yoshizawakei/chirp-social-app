@@ -20,7 +20,7 @@ class UsersTableSeeder extends Seeder
                 "email" => "test@example.com",
                 "email_verified_at" => null,
                 "password" => bcrypt("password"),
-                "profile_configured" => false,
+                "role" => 1, // 一般ユーザー
                 "remember_token" => null,
                 "created_at" => now(),
                 "updated_at" => now(),
@@ -32,7 +32,7 @@ class UsersTableSeeder extends Seeder
                 "email" => "test@example.co.jp",
                 "email_verified_at" => null,
                 "password" => bcrypt("password"),
-                "profile_configured" => false,
+                "role" => 2, // 管理者
                 "remember_token" => null,
                 "created_at" => now(),
                 "updated_at" => now(),

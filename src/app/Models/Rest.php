@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Brand extends Model
+class Rest extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'attendance_id',
+        'start_time',
+        'end_time',
     ];
 
-    // 商品とのリレーション
-    public function items()
+    public function attendance()
     {
-        return $this->hasMany(Item::class);
+        return $this->belongsTo(Attendance::class);
     }
 }
