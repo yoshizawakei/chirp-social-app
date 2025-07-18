@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ asset("css/layouts/sanitize.css") }}">
     <link rel="stylesheet" href="{{ asset('css/layouts/common.css') }}">
     @yield('css')
-    <title>COACHTECH</title>
+    <title>coachtech 勤怠管理アプリ</title>
 </head>
 <body>
 <header class="header">
@@ -17,9 +17,14 @@
         </div>
     </div>
 </header>
+
 <main>
     @yield('content')
 </main>
-    
+
+<script>
+    @yield("scripts")
+</script>
+
 </body>
 </html>

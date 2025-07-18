@@ -1,4 +1,4 @@
-@extends('layouts.user')
+@extends('layouts.admin')
 
 @section("css")
     <link rel="stylesheet" href="{{ asset('css/auth/login.css') }}">
@@ -6,7 +6,7 @@
 
 @section("content")
     <div class="login-container">
-        <h2 class="login-title">ログイン</h2>
+        <h2 class="login-title">管理者ログイン</h2>
         <form method="post" action="/login" class="login-form" novalidate>
             @csrf
             <div class="form-group">
@@ -30,14 +30,8 @@
             </div>
 
             <button type="submit" class="btn-primary">
-                ログインする
+                管理者ログインする
             </button>
-
-            @if (Route::has('register'))
-                <a class="register-link" href="/register">
-                    会員登録はこちら
-                </a>
-            @endif
         </form>
     </div>
 @endsection

@@ -17,9 +17,7 @@ class CustomRegisterResponse implements RegisterResponseContract
      */
     public function toResponse($request)
     {
-        // return $request->wantsJson()
-        //             ? new JsonResponse('', 201)
-        //             : redirect()->intended(Fortify::redirects('register'));
+
         if ($request->wantsJson()) {
             return new JsonResponse('', 201);
         }
