@@ -1,0 +1,269 @@
+body {
+    background-color: #f0f0f0;
+}
+
+.attendance-detail-container {
+    width: 90%;
+    max-width: 900px;
+    margin: 50px auto;
+}
+
+.page-title {
+    font-size: 26px;
+    color: #000000;
+    margin-bottom: 35px;
+    border-left: 6px solid #000000;
+    padding-left: 15px;
+    font-weight: bold;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-card {
+    background-color: #FFFFFF;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    padding: 0;
+}
+
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.detail-table tr {
+    border-bottom: 2px solid #E1E1E1;
+}
+
+.detail-table tr:last-child {
+    border-bottom: none;
+}
+
+.detail-table th,
+.detail-table td {
+    padding: 20px 30px;
+    vertical-align: middle;
+}
+
+.detail-label {
+    width: 150px;
+    text-align: left;
+    font-weight: normal;
+    color: #000000;
+    padding-right: 20px;
+    box-sizing: border-box;
+}
+
+.detail-value {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    color: #000000;
+    font-size: 16px;
+}
+
+.text-field {
+    background-color: #FFFFFF;
+    border: 1px solid #E1E1E1;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 16px;
+    color: #000000;
+    box-sizing: border-box;
+    height: 30px;
+    line-height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+}
+
+/* 名前フィールド */
+.detail-value .text-field {
+    width: 100%;
+    max-width: 250px;
+    margin-left: 0;
+    text-align: left;
+}
+
+/* 日付の年と日付の表示スタイル */
+.date-value-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    width: auto;
+}
+
+.date-year-field {
+    width: 80px;
+    justify-content: flex-start;
+}
+
+.date-name-field {
+    width: 90px;
+    border: none;
+    justify-content: flex-start;
+}
+
+.time-range {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 5px;
+    width: auto;
+}
+
+.time-field {
+    width: 60px;
+    text-align: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.detail-value .separator {
+    margin: 0 8px;
+    color: #000000;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* 備考欄のtextareaのスタイル */
+.memo-cell {
+    text-align: left;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.memo-textarea {
+    width: 100%;
+    min-height: 100px;
+    max-width: 300px;
+    margin-left: 0;
+    display: block;
+    padding: 10px;
+    border: 1px solid #CCCCCC;
+    border-radius: 4px;
+    font-size: 15px;
+    line-height: 1.5;
+    box-sizing: border-box;
+    resize: vertical;
+    background-color: #FFFFFF;
+    color: #333333;
+    overflow: auto;
+}
+
+/* アクションボタンのコンテナ */
+.action-buttons {
+    text-align: right;
+    margin-top: 10px;
+}
+
+.action-button {
+    background-color: #000000;
+    color: #fff;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 15px;
+}
+
+.action-button:hover {
+    background-color: #333333;
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 22px;
+        margin-bottom: 25px;
+        padding-left: 10px;
+    }
+
+    .detail-table th,
+    .detail-table td {
+        padding: 10px 20px;
+        display: block;
+        text-align: left;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .detail-label {
+        width: 100%;
+        padding-right: 0;
+        margin-bottom: 5px;
+    }
+
+    .detail-value {
+        text-align: left;
+        justify-content: flex-start;
+    }
+
+    .text-field {
+        width: 100%;
+        height: 35px;
+        line-height: 25px;
+        justify-content: flex-start;
+    }
+
+    .detail-value .text-field {
+        margin-left: 0;
+        max-width: 100%;
+    }
+
+    .date-value-container {
+        justify-content: flex-start;
+        width: auto;
+        max-width: 100%;
+        margin-right: 0;
+    }
+
+    .date-year-field,
+    .date-month-day-field {
+        width: auto;
+        flex-grow: 1;
+    }
+
+    .time-range {
+        justify-content: flex-start;
+        width: auto;
+        max-width: 100%;
+        margin-right: 0;
+    }
+
+    .time-field {
+        width: 55px;
+        height: 30px;
+        line-height: 20px;
+    }
+
+    .memo-cell {
+        text-align: left;
+        padding-top: 15px;
+    }
+
+    .memo-textarea {
+        min-height: 80px;
+        max-width: 100%;
+        margin-left: 0;
+    }
+
+    .action-buttons {
+        text-align: center;
+    }
+
+    .action-button {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+    }
+}

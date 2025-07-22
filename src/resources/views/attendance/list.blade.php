@@ -1,17 +1,17 @@
-@extends('layouts.user')
+@extends("layouts.user")
 
-@section('css')
+@section("css")
     <link rel="stylesheet" href="{{ asset('css/attendance/list.css') }}">
 @endsection
 
-@section('content')
+@section("content")
     <div class="attendance-list-container">
         <div class="attendance-list__header">
             <h1>勤怠一覧</h1>
             <div class="month-navigation">
-                <a href="#" class="nav-button">&lt; 前月</a>
-                <span class="current-month">{{ \Carbon\Carbon::now()->isoFormat('YYYY/MM') }}</span>
-                <a href="#" class="nav-button">翌月 &gt;</a>
+                <a href="{{ route("attendance.list", ["year" => $prevMonthYear->year, "month" => $prevMonthYear->month]) }}" class="nav-button">&lt; 前月</a>
+                <span class="current-month">{{ $currentMonthYear }}</span>
+                <a href="{{ route("attendance.list", ["year" => $nextMonthYear->year, "month" => $nextMonthYear->month]) }}" class="nav-button">翌月 &gt;</a>
             </div>
         </div>
 
@@ -34,7 +34,7 @@
                         <td>{{ $attendance->clock_out_time ? \Carbon\Carbon::parse($attendance->clock_out_time)->format("H:i") : '-' }}</td>
                         <td>{{ $attendance->total_break_time }}</td>
                         <td>{{ $attendance->total_work_time }}</td>
-                        <td><a href="#" class="detail-link">詳細</a></td>
+                        <td><a href="{{ route("attendance.detail", $attendance->id) }}" class="detail-link">詳細</a></td>
                     </tr>
                 @empty
                     <tr>

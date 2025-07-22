@@ -171,7 +171,7 @@ class AttendanceController extends Controller
     }
 
     // 勤怠一覧
-    public function list(Request $request)
+    public function list(Request $request, $year = null, $month = null)
     {
         $user = Auth::user();
 
@@ -179,7 +179,12 @@ class AttendanceController extends Controller
             return redirect()->route("login");
         }
 
-        $attendances = Attendance::with("rests")->where("user_id", $user->id)->whereMonth("date", Carbon::now()->month)->whereYear("date", Carbon::now()->year)->orderBy("date", "asc")->get();
+        $displayDate = Carbon::createFromDate($year ?? Carbon::now()->year, $month ?? Carbon::now()->month, 1);
+
+        $attendances = Attendance::with("rests")
+            ->where("user_id", $user->id)->whereMonth("date", $displayDate->month)
+            ->whereYear("date", $displayDate->year)
+            ->orderBy("date", "asc")->get();
 
         foreach ($attendances as $attendance) {
             $totalBreakTime = 0;
@@ -203,7 +208,31 @@ class AttendanceController extends Controller
             $attendance->formatted_date = Carbon::parse($attendance->date)->isoFormat("MM/DD(ddd)");
         }
 
-        return view("attendance.list", compact("attendances"));
+        $currentMonthYear = $displayDate->isoFormat("YYYY/MM");
+        $prevMonthYear = $displayDate->copy()->subMonth();
+        $nextMonthYear = $displayDate->copy()->addMonth();
+
+        return view("attendance.list", compact("attendances", "displayDate", "currentMonthYear", "prevMonthYear", "nextMonthYear"));
+    }
+
+    // 勤怠詳細
+    public function detail(Attendance $attendance)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route("login");
+        }
+
+        if ($attendance->user_id !== $user->id) {
+            return redirect()->route("attendance.index")->with("error", "他のユーザーの勤怠情報は表示できません。");
+        }
+
+        $attendance->load("rests");
+
+        $attendance->formatted_date = Carbon::parse($attendance->date)->isoFormat("YYYY年/MM月/DD日(ddd)");
+
+        return view("attendance.detail", compact("attendance"));
     }
 
 
