@@ -25,7 +25,7 @@ class CreateCorrectionApplicationsTable extends Migration
             $table->time("clock_out_time_after")->nullable();
             $table->json("rests_after")->nullable();
             $table->text("notes_after")->nullable();
-            $table->boolean("is_approved")->default(false);
+            $table->tinyInteger("is_approved")->nullable()->default(null);
             $table->timestamps();
         });
     }

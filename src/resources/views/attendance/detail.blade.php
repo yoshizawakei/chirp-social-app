@@ -7,7 +7,7 @@
 @section("content")
     <div class="attendance-detail-container">
         <h1 class="page-title">勤怠詳細</h1>
-        <form action="#" method="post">
+        <form action="{{ route('attendance.requestModify', ['id' => $attendance->id]) }}" method="post">
             @csrf
             <div class="detail-card">
                 <table class="detail-table">
@@ -21,57 +21,45 @@
                         <tr>
                             <th class="detail-label">日付</th>
                             <td class="detail-value date-value-container">
-                                <span class="text-field date-name-field">{{ \Carbon\Carbon::parse($attendance->date)->isoFormat('YYYY年') }}</span>
+                                <span class="text-field date-name-field">{{ $formattedDateYear }}</span>
                                 <span class="separator"></span>
-                                <span class="text-field date-name-field">{{ \Carbon\Carbon::parse($attendance->date)->isoFormat('M月D日') }}</span>
+                                <span class="text-field date-name-field">{{ $formattedDateMonthDay }}</span>
                             </td>
                         </tr>
                         <tr>
                             <th class="detail-label">出勤・退勤</th>
                             <td class="detail-value time-range">
-                                <input type="text" class="text-field time-field"
-                                    value="{{ $attendance->clock_in_time ? \Carbon\Carbon::parse($attendance->clock_in_time)->format('H:i') : '' }}">
+                                <input name="clock_in_time_after" type="text" class="text-field time-field"
+                                    value="{{ $formattedClockInTime }}">
                                 <span class="separator">~</span>
-                                <input type="text" class="text-field time-field"
-                                    value="{{ $attendance->clock_out_time ? \Carbon\Carbon::parse($attendance->clock_out_time)->format('H:i') : '' }}">
+                                <input name="clock_out_time_after" type="text" class="text-field time-field"
+                                    value="{{ $formattedClockOutTime }}">
                             </td>
                         </tr>
                         <tr>
                             <th class="detail-label">休憩</th>
                             <td class="detail-value time-range">
-                                @if ($attendance->rests->isNotEmpty() && $attendance->rests->first()->start_time)
-                                    <input type="text" class="text-field time-field"
-                                        value="{{ \Carbon\Carbon::parse($attendance->rests->first()->start_time)->format('H:i') }}">
-                                    <span class="separator">~</span>
-                                    <input type="text" class="text-field time-field"
-                                        value="{{ $attendance->rests->first()->end_time ? \Carbon\Carbon::parse($attendance->rests->first()->end_time)->format('H:i') : '' }}">
-                                @else
-                                    <input type="text" class="text-field time-field" value="">
-                                    <span class="separator">~</span>
-                                    <input type="text" class="text-field time-field" value="">
-                                @endif
+                                <input name="rests_after[0][start]" type="text" class="text-field time-field"
+                                    value="{{ $formattedRest1Start }}">
+                                <span class="separator">~</span>
+                                <input name="rests_after[0][end]" type="text" class="text-field time-field"
+                                    value="{{ $formattedRest1End }}">
                             </td>
                         </tr>
                         <tr>
                             <th class="detail-label">休憩2</th>
                             <td class="detail-value time-range">
-                                @if ($attendance->rests->count() > 1 && $attendance->rests->get(1)->start_time)
-                                    <input type="text" class="text-field time-field"
-                                        value="{{ \Carbon\Carbon::parse($attendance->rests->get(1)->start_time)->format('H:i') }}">
-                                    <span class="separator">~</span>
-                                    <input type="text" class="text-field time-field"
-                                        value="{{ $attendance->rests->get(1)->end_time ? \Carbon\Carbon::parse($attendance->rests->get(1)->end_time)->format('H:i') : '' }}">
-                                @else
-                                    <input type="text" class="text-field time-field" value="">
-                                    <span class="separator">~</span>
-                                    <input type="text" class="text-field time-field" value="">
-                                @endif
+                                <input name="rests_after[1][start]" type="text" class="text-field time-field"
+                                    value="{{ $formattedRest2Start }}">
+                                <span class="separator">~</span>
+                                <input name="rests_after[1][end]" type="text" class="text-field time-field"
+                                    value="{{ $formattedRest2End }}">
                             </td>
                         </tr>
                         <tr>
                             <th class="detail-label">備考</th>
                             <td class="detail-value memo-cell">
-                                <textarea class="memo-textarea">{{ $attendance->memo ?? '' }}</textarea>
+                                <textarea name="notes_after" class="memo-textarea">{{ $formattedNotes }}</textarea>
                             </td>
                         </tr>
                     </tbody>
@@ -80,7 +68,7 @@
 
             <div class="action-buttons">
                 <button type="submit" class="action-button submit-button">申請</button>
-                <button type="button" class="action-button cancel-button">戻る</button>
+                <button type="button" class="action-button cancel-button" onclick="history.back()">戻る</button>
             </div>
         </form>
     </div>

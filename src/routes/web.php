@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
-
+use App\Http\Controllers\ApplicationController;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +31,15 @@ Route::middleware(["auth"])->group(function () {
 
     // 勤怠詳細
     Route::get("/attendance/{attendance}", [AttendanceController::class, "detail"])->name("attendance.detail");
+
+    // 勤怠修正申請
+    Route::post("/attendance/request-modify/{id}", [AttendanceController::class, "requestModify"])->name("attendance.requestModify");
+
+    // 勤怠修正申請一覧
+    Route::get("/application/list", [ApplicationController::class, "list"])->name("application.list");
+
+    // 勤怠修正申請詳細
+    Route::get("/application/detail/{application}", [ApplicationController::class, "detail"])->name("application.detail");
 });
 
 // ログアウト

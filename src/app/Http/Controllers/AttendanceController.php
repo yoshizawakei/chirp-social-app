@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CorrectionApplication;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -186,6 +187,7 @@ class AttendanceController extends Controller
             ->whereYear("date", $displayDate->year)
             ->orderBy("date", "asc")->get();
 
+        $formattedAttendances = [];
         foreach ($attendances as $attendance) {
             $totalBreakTime = 0;
             foreach ($attendance->rests as $rest) {
@@ -195,7 +197,7 @@ class AttendanceController extends Controller
                     $totalBreakTime += $end->diffInMinutes($start);
                 }
             }
-            $attendance->total_break_time = sprintf("%02d:%02d", floor($totalBreakTime / 60), $totalBreakTime % 60);
+            $formattedTotalBreakTime = sprintf("%02d:%02d", floor($totalBreakTime / 60), $totalBreakTime % 60);
 
             $totalWorkTime = 0;
             if ($attendance->clock_in_time && $attendance->clock_out_time) {
@@ -203,16 +205,30 @@ class AttendanceController extends Controller
                 $clockOut = Carbon::parse($attendance->clock_out_time);
                 $totalWorkTime = $clockOut->diffInMinutes($clockIn) - $totalBreakTime;
             }
-            $attendance->total_work_time = sprintf("%02d:%02d", floor($totalWorkTime / 60), $totalWorkTime % 60);
 
-            $attendance->formatted_date = Carbon::parse($attendance->date)->isoFormat("MM/DD(ddd)");
+            $formattedTotalWorkTime = sprintf("%02d:%02d", floor($totalWorkTime / 60), $totalWorkTime % 60);
+
+            $formattedAttendances[] = (object) [
+                "id" => $attendance->id,
+                "formatted_date" => Carbon::parse($attendance->date)->isoFormat("MM/DD(ddd)"),
+                "formatted_clock_in_time" => $attendance->clock_in_time ? Carbon::parse($attendance->clock_in_time)->format("H:i") : "-",
+                "formatted_clock_out_time" => $attendance->clock_out_time ? Carbon::parse($attendance->clock_out_time)->format("H:i") : "-",
+                "total_break_time" => $formattedTotalBreakTime,
+                "total_work_time" => $formattedTotalWorkTime,
+            ];
         }
 
         $currentMonthYear = $displayDate->isoFormat("YYYY/MM");
         $prevMonthYear = $displayDate->copy()->subMonth();
         $nextMonthYear = $displayDate->copy()->addMonth();
 
-        return view("attendance.list", compact("attendances", "displayDate", "currentMonthYear", "prevMonthYear", "nextMonthYear"));
+        return view("attendance.list", compact(
+            "formattedAttendances",
+            "displayDate",
+            "currentMonthYear",
+            "prevMonthYear",
+            "nextMonthYear",
+        ));
     }
 
     // 勤怠詳細
@@ -230,9 +246,95 @@ class AttendanceController extends Controller
 
         $attendance->load("rests");
 
-        $attendance->formatted_date = Carbon::parse($attendance->date)->isoFormat("YYYY年/MM月/DD日(ddd)");
+        $formattedDateYear = Carbon::parse($attendance->date)->isoFormat("YYYY年");
+        $formattedDateMonthDay = Carbon::parse($attendance->date)->isoFormat("M月D日");
 
-        return view("attendance.detail", compact("attendance"));
+        $formattedClockInTime = $attendance->clock_in_time ? Carbon::parse($attendance->clock_in_time)->format("H:i") : "";
+        $formattedClockOutTime = $attendance->clock_out_time ? Carbon::parse($attendance->clock_out_time)->format("H:i") : "";
+
+        $rest1 = $attendance->rests->isNotEmpty() ? $attendance->rests->first() : null;
+        $formattedRest1Start = $rest1 && $rest1->start_time ? Carbon::parse($rest1->start_time)->format("H:i") : "";
+        $formattedRest1End = $rest1 && $rest1->end_time ? Carbon::parse($rest1->end_time)->format("H:i") : "";
+
+        $rest2 = $attendance->rests->count() > 1 ? $attendance->rests->get(1) : null;
+        $formattedRest2Start = $rest2 && $rest2->start_time ? Carbon::parse($rest2->start_time)->format("H:i") : "";
+        $formattedRest2End = $rest2 && $rest2->end_time ? Carbon::parse($rest2->end_time)->format("H:i") : "";
+
+        $formattedNotes = $attendance->notes ?? "";
+
+        return view("attendance.detail", compact(
+            "attendance",
+            "formattedDateYear",
+            "formattedDateMonthDay",
+            "formattedClockInTime",
+            "formattedClockOutTime",
+            "formattedRest1Start",
+            "formattedRest1End",
+            "formattedRest2Start",
+            "formattedRest2End",
+            "formattedNotes"
+        ));
+    }
+
+    // 勤怠修正申請
+    public function requestModify(Request $request, $id)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route("login");
+        }
+
+        $attendance = Attendance::findOrFail($id);
+
+        if ($attendance->user_id !== $user->id) {
+            return redirect()->route("attendance.index")->with("error", "他のユーザーの勤怠情報は修正できません。");
+        }
+
+        $attendance = Attendance::with("rests")->find($id);
+
+        if (!$attendance) {
+            return redirect()->route("attendance.index")->with("error", "指定された勤怠情報が見つかりません。");
+        }
+
+        $restsBefore = [];
+        foreach ($attendance->rests as $rest) {
+            $restsBefore[] = [
+                "start" => $rest->start_time ? Carbon::parse($rest->start_time)->format("H:i") : null,
+                "end" => $rest->end_time ? Carbon::parse($rest->end_time)->format("H:i") : null,
+            ];
+        }
+
+        $restsAfter = [];
+        if ($request->has("rests_after") && is_array($request->rests_after)) {
+            foreach ($request->rests_after as $index => $restData) {
+                $start = $restData["start"] ?? null;
+                $end = $restData["end"] ?? null;
+
+                if ($start !== null || $end !== null) {
+                    $restsAfter[] = [
+                        "start" => $start,
+                        "end" => $end,
+                    ];
+                }
+            }
+        }
+
+        CorrectionApplication::create([
+            "user_id" => $user->id,
+            "attendance_id" => $attendance->id,
+            "clock_in_time_before" => $attendance->clock_in_time,
+            "clock_out_time_before" => $attendance->clock_out_time,
+            "rests_before" => json_encode($restsBefore),
+            "notes_before" => $attendance->notes,
+            "clock_in_time_after" => $request->clock_in_time_after,
+            "clock_out_time_after" => $request->clock_out_time_after,
+            "rests_after" => json_encode($restsAfter),
+            "notes_after" => $request->notes_after,
+            "is_approved" => false,
+        ]);
+
+        return redirect()->route("attendance.list", ["attendance" => $attendance])->with("success", "勤怠修正申請を送信しました。");
     }
 
 

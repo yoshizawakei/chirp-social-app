@@ -27,14 +27,14 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($attendances as $attendance)
+                @forelse ($formattedAttendances as $attendance)
                     <tr>
                         <td>{{ $attendance->formatted_date }}</td>
-                        <td>{{ $attendance->clock_in_time ? \Carbon\Carbon::parse($attendance->clock_in_time)->format("H:i") : '-' }}</td>
-                        <td>{{ $attendance->clock_out_time ? \Carbon\Carbon::parse($attendance->clock_out_time)->format("H:i") : '-' }}</td>
+                        <td>{{ $attendance->formatted_clock_in_time }}</td>
+                        <td>{{ $attendance->formatted_clock_out_time }}</td>
                         <td>{{ $attendance->total_break_time }}</td>
                         <td>{{ $attendance->total_work_time }}</td>
-                        <td><a href="{{ route("attendance.detail", $attendance->id) }}" class="detail-link">詳細</a></td>
+                        <td><a href="{{ route("attendance.detail", ["attendance" => "$attendance->id"]) }}" class="detail-link">詳細</a></td>
                     </tr>
                 @empty
                     <tr>
@@ -47,5 +47,5 @@
 @endsection
 
 @section('scripts')
-    {{-- 必要に応じてJavaScriptをここに記述 --}}
+    {{-- JavaScript --}}
 @endsection

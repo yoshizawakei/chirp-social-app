@@ -1,0 +1,130 @@
+body {
+    background-color: #f0f0f0;
+}
+
+.application-list-container {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #f0f0f0;
+}
+
+.application-list__header {
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.application-list__header h1 {
+    font-size: 26px;
+    color: #000000;
+    margin-bottom: 20px;
+    border-left: 6px solid #000000;
+    padding-left: 20px;
+}
+
+.tab-navigation {
+    display: flex;
+    width: 100%;
+    justify-content: left;
+    align-items: center;
+    font-size: 18px;
+    padding: 10px 20px;
+    margin-bottom: 40px;
+    border-bottom: 2px solid #000000;
+    gap: 30px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #737373;
+    font-weight: bold;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 5px;
+}
+
+.tab-button:hover {
+    color: #000000;
+}
+
+.tab-button.active {
+    color: #000000;
+}
+
+.application-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.application-table th,
+.application-table td {
+    border-bottom: 1px solid #eee;
+    padding: 12px 15px;
+    text-align: center;
+}
+
+.application-table th {
+    background-color: #FFFFFF;
+    font-weight: bold;
+    color: #737373;
+    text-transform: uppercase;
+}
+
+.application-table tr:last-child td {
+    border-bottom: none;
+}
+
+.application-table tbody tr {
+    background-color: #FFFFFF;
+}
+
+.application-table thead tr th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.application-table thead tr th:last-child {
+    border-top-right-radius: 10px;
+}
+.application-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+    border-bottom: none;
+}
+
+.detail-link {
+    display: inline-block;
+    padding: 5px 10px;
+    text-decoration: none;
+    color: #000000;
+    transition: background-color 0.3s ease;
+}
+
+.detail-link:hover {
+    color: #737373;
+}
+
+@media (max-width: 768px) {
+    .application-list-container {
+        margin: 20px auto;
+        padding: 20px;
+    }
+
+    .application-table th,
+    .application-table td {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+
+    .tab-navigation {
+        width: 100%;
+        justify-content: left;
+    }
+
+    .tab-button {
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+}
