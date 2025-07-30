@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\ApplicationController;
 
@@ -35,12 +36,25 @@ Route::middleware(["auth"])->group(function () {
     // 勤怠修正申請
     Route::post("/attendance/request-modify/{id}", [AttendanceController::class, "requestModify"])->name("attendance.requestModify");
 
-    // 勤怠修正申請一覧
-    Route::get("/application/list", [ApplicationController::class, "list"])->name("application.list");
+    // 申請一覧
+    Route::get("/stamp_correction_request/list", [ApplicationController::class, "list"])->name("application.list");
 
-    // 勤怠修正申請詳細
+    // 申請詳細
     Route::get("/application/detail/{application}", [ApplicationController::class, "detail"])->name("application.detail");
+
+
 });
+
+// 管理者ログイン
+Route::get("/admin/login", [AdminController::class, "login"])->name("admin.login");
+// 管理者ログイン処理
+Route::post("/admin/login", [AdminController::class, "authenticate"])->name("admin.authenticate");
+// 管理者勤怠一覧
+Route::get("/admin/attendance/list/{dateString?}", [AdminController::class, "attendanceList"])->name("admin.attendance.list");
+// 管理者勤怠詳細
+Route::get("/admin/attendance/detail/{attendance}", [AdminController::class, "adminDetail"])->name("admin.attendance.detail");
+
+
 
 // ログアウト
 Route::post("/logout", function () {

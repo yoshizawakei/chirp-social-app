@@ -6,7 +6,6 @@ use Illuminate\Http\JsonResponse;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Fortify;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,7 +29,17 @@ class CustomLoginResponse implements LoginResponseContract
         if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
             return redirect()->route('verification.notice');
         }
-        // ユーザーがメールアドレスの確認を必要としない場合、または既に確認済みの場合、
-        return redirect()->intended(Fortify::redirects('login'));
+
+        // ユーザーか管理者かでリダイレクト先を変更
+        if ($user->isAdmin()) {
+            // 管理者の場合、管理者のダッシュボードへリダイレクト
+            return redirect()->route('admin.attendance.list');
+        } elseif ($user->isUser()) {
+            // 一般ユーザーの場合、勤怠一覧へリダイレクト
+            return redirect()->route('attendance.index');
+        }
+
+        // デフォルトのリダイレクト先
+        return redirect(Fortify::redirects('login'));
     }
 }

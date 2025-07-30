@@ -45,6 +45,21 @@ class User extends Authenticatable implements MustVerifyEmail
 
     ];
 
+    /**
+     * ユーザーが管理者かどうかを確認する
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 2; // 管理者の役割は2
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === 1; // 一般ユーザーの役割は1
+    }
+
+
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);

@@ -183,7 +183,8 @@ class AttendanceController extends Controller
         $displayDate = Carbon::createFromDate($year ?? Carbon::now()->year, $month ?? Carbon::now()->month, 1);
 
         $attendances = Attendance::with("rests")
-            ->where("user_id", $user->id)->whereMonth("date", $displayDate->month)
+            ->where("user_id", $user->id)
+            ->whereMonth("date", $displayDate->month)
             ->whereYear("date", $displayDate->year)
             ->orderBy("date", "asc")->get();
 
@@ -262,6 +263,36 @@ class AttendanceController extends Controller
 
         $formattedNotes = $attendance->notes ?? "";
 
+        $correctionApplication = CorrectionApplication::where("attendance_id", $attendance->id)->latest()->first();
+
+        $applicationStatus = null;
+
+        if ($correctionApplication) {
+            $applicationStatus = $correctionApplication->is_approved;
+
+            $formattedClockInTime = $correctionApplication->clock_in_time_after ? Carbon::parse($correctionApplication->clock_in_time_after)->format("H:i") : $formattedClockInTime;
+            $formattedClockOutTime = $correctionApplication->clock_out_time_after ? Carbon::parse($correctionApplication->clock_out_time_after)->format("H:i") : $formattedClockOutTime;
+
+            $restsAfter = json_decode($correctionApplication->rests_after, true);
+            if (is_array($restsAfter)) {
+                if (isset($restsAfter[0])) {
+                    $rest1After = $restsAfter[0];
+                    $formattedRest1Start = $rest1After["start"] ? Carbon::parse($rest1After["start"])->format("H:i") : $formattedRest1Start;
+                    $formattedRest1End = $rest1After["end"] ? Carbon::parse($rest1After["end"])->format("H:i") : $formattedRest1End;
+                }
+                if (isset($restsAfter[1])) {
+                    $rest2After = $restsAfter[1];
+                    $formattedRest2Start = $rest2After["start"] ? Carbon::parse($rest2After["start"])->format("H:i") : $formattedRest2Start;
+                    $formattedRest2End = $rest2After["end"] ? Carbon::parse($rest2After["end"])->format("H:i") : $formattedRest2End;
+                }
+            }
+            $formattedNotes = $correctionApplication->notes_after ?? $formattedNotes;
+        }
+
+        $formattedApplicationStatusText = $this->getApprovalStatusText($applicationStatus);
+
+        $isEditable = !($applicationStatus === 0);
+
         return view("attendance.detail", compact(
             "attendance",
             "formattedDateYear",
@@ -272,8 +303,26 @@ class AttendanceController extends Controller
             "formattedRest1End",
             "formattedRest2Start",
             "formattedRest2End",
-            "formattedNotes"
+            "formattedNotes",
+            "formattedApplicationStatusText",
+            "correctionApplication",
+            "applicationStatus",
+            "isEditable"
         ));
+    }
+
+    /**
+     * 承認ステータスのテキストを取得
+     * @param int|null $isApproved
+     * @return string
+     */
+    private function getApprovalStatusText($isApproved)
+    {
+        if ($isApproved === 0) {
+            return "承認待ち";
+        } elseif ($isApproved === 1) {
+            return "承認済み";
+        }
     }
 
     // 勤怠修正申請
