@@ -10,6 +10,7 @@ use App\Models\Attendance;
 use App\Models\Rest;
 use Carbon\Carbon;
 
+
 class AttendanceController extends Controller
 {
     // 勤怠の基本画面

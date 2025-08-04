@@ -27,8 +27,8 @@
                     <nav class="header-nav">
                         <ul class="header-nav_list">
                             <li><a href="{{ route("admin.attendance.list") }}">勤怠一覧</a></li>
-                            <li><a href="#">スタッフ一覧</a></li>
-                            <li><a href="#">申請一覧</a></li>
+                            <li><a href="{{ route("admin.staff.list") }}">スタッフ一覧</a></li>
+                            <li><a href="{{ route("admin.correctionRequest.list") }}">申請一覧</a></li>
                             <li>
                                 <form action="/logout" method="POST">
                                     @csrf

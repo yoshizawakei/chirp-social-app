@@ -52,7 +52,18 @@ Route::post("/admin/login", [AdminController::class, "authenticate"])->name("adm
 // 管理者勤怠一覧
 Route::get("/admin/attendance/list/{dateString?}", [AdminController::class, "attendanceList"])->name("admin.attendance.list");
 // 管理者勤怠詳細
-Route::get("/admin/attendance/detail/{attendance}", [AdminController::class, "adminDetail"])->name("admin.attendance.detail");
+Route::get("/admin/attendance/{attendance}", [AdminController::class, "adminDetail"])->name("admin.attendance.detail");
+// 管理者勤怠修正
+Route::post("/admin/attendance/modify/{id}", [AdminController::class, "modifyAttendance"])->name("admin.attendance.modify");
+// スタッフ一覧
+Route::get("/admin/staff/list", [AdminController::class, "staffList"])->name("admin.staff.list");
+// スタッフ別勤怠一覧
+Route::get("/admin/attendance/staff/{id}/{year?}/{month?}", [AdminController::class, "staffDetail"])->name("admin.staff.detail");
+// 管理者修正申請一覧
+Route::get("/stamp_correction_request/list", [AdminController::class, "correctionRequestList"])->name("admin.correctionRequest.list");
+
+
+
 
 
 

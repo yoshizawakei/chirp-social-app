@@ -118,6 +118,23 @@ body {
     color: #737373;
 }
 
+.csv-output {
+    margin-top: 30px;
+}
+
+.csv-output form {
+    text-align: right;
+}
+
+.csv-button {
+    padding: 5px 15px;
+    color: #FFFFFF;
+    background-color: #000000;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
 /* レスポンシブ対応 (簡易版) */
 @media (max-width: 768px) {
     .attendance-list-container {
@@ -140,4 +157,5 @@ body {
         width: 100%;
         justify-content: space-around;
     }
+
 }
