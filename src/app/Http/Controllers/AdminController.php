@@ -18,7 +18,7 @@ class AdminController extends Controller
     // 管理者ログイン画面を表示
     public function login()
     {
-        return view("auth.login");
+        return view("admin.login");
     }
 
     // 管理者ログイン処理
@@ -26,17 +26,20 @@ class AdminController extends Controller
     {
         $credentials = $request->only("email", "password");
 
-        if (auth()->attempt($credentials)) {
-            if (!auth()->user()->isAdmin()) {
-                auth()->logout();
-                return redirect()->back()->with("error", "管理者アカウントでログインしてください。");
+        // ログイン認証を試行
+        if (Auth::attempt($credentials)) {
+            // 認証成功後、ユーザーが管理者かチェック
+            if (Auth::user()->isAdmin()) {
+                // 管理者の場合、管理者用の勤怠一覧ページにリダイレクト
+                return redirect()->route("admin.attendance.list")->with("success", "管理者としてログインしました。");
+            } else {
+                // 管理者でない場合、ログアウトさせてエラーメッセージを表示
+                Auth::logout();
+                return redirect()->route("admin.login")->with("error", "管理者アカウントでログインしてください。");
             }
-            // ログイン成功
-            return redirect()->route("admin.attendance.list")->with("success", "ログインしました。");
         }
-
-        // ログイン失敗
-        return redirect()->back()->with("error", "メールアドレスまたはパスワードが間違っています。");
+        // 認証失敗の場合
+        return redirect()->route("admin.login")->with("error", "メールアドレスまたはパスワードが正しくありません。");
     }
 
     // スタッフの勤怠一覧

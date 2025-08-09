@@ -12,6 +12,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Http\Responses\CustomLoginResponse;
 use App\Http\Responses\CustomRegisterResponse;
 use App\Providers\RouteServiceProvider;
+use App\Models\User;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -32,6 +33,11 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+
+        // Fortify のカスタムレスポンスを設定
+        Gate::define("isAdmin", function ($user) {
+            return $user->is_admin;
+        });
 
         // VerifyEmail の通知をカスタマイズ
         VerifyEmail::toMailUsing(function ($notifiable, $verificationUrl) {

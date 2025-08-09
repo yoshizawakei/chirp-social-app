@@ -18,15 +18,13 @@
             </thead>
             <tbody>
                 @forelse ($staffs as $staff)
-                    @if ($staff->id !== auth()->id())
-                        <tr>
-                            <td>{{ $staff->name }}</td>
-                            <td>{{ $staff->email }}</td>
-                            <td>
-                                <a href="{{ route("admin.staff.detail", ["id" => $staff->id]) }}" class="detail-button">詳細</a>
-                            </td>
-                        </tr>
-                    @endif
+                    <tr>
+                        <td>{{ $staff->name }}</td>
+                        <td>{{ $staff->email }}</td>
+                        <td>
+                            <a href="{{ route("admin.staff.detail", ["id" => $staff->id]) }}" class="detail-button">詳細</a>
+                        </td>
+                    </tr>
                 @empty
                     <tr>
                         <td colspan="3">スタッフ情報はありません。</td>

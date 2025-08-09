@@ -27,7 +27,7 @@ class AttendanceController extends Controller
             return redirect()->route("attendance.index");
         }
 
-        return redirect()->route("attendance.login");
+        return redirect()->route("attendance.login")->with("error", "メールアドレスまたはパスワードが正しくありません。");
     }
 
     // 勤怠の基本画面
