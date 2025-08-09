@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
+// ユーザーログイン画面
+Route::get("/", [AttendanceController::class, "login"])->name("attendance.login");
+// ユーザーログイン処理
+Route::post("/login", [AttendanceController::class, "authenticate"])->name("attendance.authenticate");
+
 Route::middleware(["auth"])->group(function () {
     // 勤怠関係
     Route::get("/attendance", [AttendanceController::class, "index"])->name("attendance.index");
@@ -41,8 +46,6 @@ Route::middleware(["auth"])->group(function () {
 
     // 申請詳細
     Route::get("/application/detail/{application}", [ApplicationController::class, "detail"])->name("application.detail");
-
-
 });
 
 // 管理者ログイン

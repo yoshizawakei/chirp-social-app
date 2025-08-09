@@ -13,15 +13,15 @@ use Illuminate\Support\Facades\Log;
 use App\Models\User;
 
 
-
-
 class AdminController extends Controller
 {
+    // 管理者ログイン画面を表示
     public function login()
     {
-        return view("admin.login");
+        return view("auth.login");
     }
 
+    // 管理者ログイン処理
     public function authenticate(Request $request)
     {
         $credentials = $request->only("email", "password");
@@ -39,6 +39,7 @@ class AdminController extends Controller
         return redirect()->back()->with("error", "メールアドレスまたはパスワードが間違っています。");
     }
 
+    // スタッフの勤怠一覧
     public function attendanceList(Request $request, $dateString = null)
     {
         $user = Auth::user();
@@ -368,7 +369,7 @@ class AdminController extends Controller
         return view("admin.request-list", compact("applications", "status"));
     }
     
-
+    // 修正申請詳細
     public function correctionRequestDetail(Attendance $attendance)
     {
         $user = Auth::user();
@@ -447,6 +448,7 @@ class AdminController extends Controller
         ));
     }
 
+    // 承認処理
     public function approveCorrection(Request $request, $id)
     {
         $loggedInUser = Auth::user();

@@ -13,6 +13,23 @@ use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
+    // ユーザーログイン画面
+    public function login()
+    {
+        return view("auth.login");
+    }
+    // ユーザーログイン処理
+    public function authenticate(Request $request)
+    {
+        $credentials = $request->only("email", "password");
+
+        if (Auth::attempt($credentials)) {
+            return redirect()->route("attendance.index");
+        }
+
+        return redirect()->route("attendance.login");
+    }
+
     // 勤怠の基本画面
     public function index()
     {
