@@ -60,14 +60,18 @@ Route::get("/admin/staff/list", [AdminController::class, "staffList"])->name("ad
 // スタッフ別勤怠一覧
 Route::get("/admin/attendance/staff/{id}/{year?}/{month?}", [AdminController::class, "staffDetail"])->name("admin.staff.detail");
 // 管理者修正申請一覧
-Route::get("/stamp_correction_request/list", [AdminController::class, "correctionRequestList"])->name("admin.correctionRequest.list");
+Route::get("/admin/stamp_correction_request/list", [AdminController::class, "correctionRequestList"])->name("admin.correctionRequest.list");
 // 管理者修正申請詳細
-Route::get("/stamp_correction_request/detail/{attendance}", [AdminController::class, "correctionRequestDetail"])->name("admin.correctionRequest.detail");
+Route::get("/admin/stamp_correction_request/detail/{attendance}", [AdminController::class, "correctionRequestDetail"])->name("admin.correctionRequest.detail");
 // 管理者承認処理
-Route::post("/stamp_correction_request/approve/{id}", [AdminController::class, "approveCorrection"])->name("admin.correctionRequest.approve");
+Route::post("/admin/stamp_correction_request/approve/{id}", [AdminController::class, "approveCorrection"])->name("admin.correctionRequest.approve");
 
 // ログアウト
 Route::post("/logout", function () {
     Auth::logout();
     return redirect()->route("attendance.index");
 })->name("logout");
+Route::post("/admin/logout", function () {
+    Auth::logout();
+    return redirect()->route("admin.login");
+})->name("admin.logout");

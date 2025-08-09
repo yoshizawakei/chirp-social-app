@@ -34,7 +34,7 @@
                         <td>{{ $attendance->formatted_clock_out_time }}</td>
                         <td>{{ $attendance->total_break_time }}</td>
                         <td>{{ $attendance->total_work_time }}</td>
-                        <td><a href="{{ route("attendance.detail", ["attendance" => "$attendance->id"]) }}" class="detail-link">詳細</a></td>
+                        <td><a href="{{ route("attendance.detail", ["attendance" => $attendance->id]) }}" class="detail-link">詳細</a></td>
                     </tr>
                 @empty
                     <tr>

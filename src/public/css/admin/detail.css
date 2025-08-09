@@ -181,6 +181,15 @@ form {
     background-color: #333333;
 }
 
+.approved-button {
+    background-color: #696969;
+}
+
+.approved-button:hover {
+    background-color: #696969;
+}
+
+
 .pending-text {
     color: #FF0000;
 }

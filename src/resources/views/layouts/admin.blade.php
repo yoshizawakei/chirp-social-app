@@ -30,7 +30,7 @@
                             <li><a href="{{ route("admin.staff.list") }}">スタッフ一覧</a></li>
                             <li><a href="{{ route("admin.correctionRequest.list") }}">申請一覧</a></li>
                             <li>
-                                <form action="/logout" method="POST">
+                                <form action="/admin/logout" method="POST">
                                     @csrf
                                     <button class="header-nav_logout-button" type="submit">ログアウト</button>
                                 </form>

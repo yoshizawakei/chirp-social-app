@@ -7,7 +7,7 @@
 @section("content")
     <div class="attendance-detail-container">
         <h1 class="page-title">勤怠詳細</h1>
-        <form action="{{ route('admin.correctionRequest.approve', ['id' => $attendance->id]) }}" method="post">
+        <form action="{{ route('admin.correctionRequest.approve', ['id' => $correctionApplication->id]) }}" method="post">
             @csrf
             <div class="detail-card">
                 <table class="detail-table">
@@ -93,6 +93,7 @@
                     <button type="submit" class="action-button submit-button">承認</button>
                     <button type="button" class="action-button cancel-button" onclick="history.back()">戻る</button>
                 @else
+                    <div class="action-button approved-button">承認済み</div>
                     <button type="button" class="action-button cancel-button" onclick="history.back()">戻る</button>
                 @endif
             </div>

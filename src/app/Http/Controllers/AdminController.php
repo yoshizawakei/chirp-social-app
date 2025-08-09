@@ -44,7 +44,7 @@ class AdminController extends Controller
         $user = Auth::user();
 
         if (!$user || !$user->isAdmin()) {
-            return redirect()->route("login")->with("error", "管理者アカウントでログインしてください。");
+            return redirect()->route("admin.login")->with("error", "管理者アカウントでログインしてください。");
         }
 
         try {
@@ -342,6 +342,7 @@ class AdminController extends Controller
         ));
     }
 
+    // 修正申請一覧
     public function correctionRequestList(Request $request)
     {
         $loggedInUser = Auth::user();
@@ -350,8 +351,7 @@ class AdminController extends Controller
             return redirect()->route("admin.login")->with("error", "管理者アカウントでログインしてください。");
         }
 
-        $query = CorrectionApplication::with(["user", "attendance"])
-            ->where("user_id", $loggedInUser->id);
+        $query = CorrectionApplication::with(["user", "attendance"]);
 
         $status = $request->query("status", "pending");
 
@@ -367,6 +367,7 @@ class AdminController extends Controller
 
         return view("admin.request-list", compact("applications", "status"));
     }
+    
 
     public function correctionRequestDetail(Attendance $attendance)
     {
@@ -446,9 +447,67 @@ class AdminController extends Controller
         ));
     }
 
-    public function approveCorrection()
+    public function approveCorrection(Request $request, $id)
     {
-        
+        $loggedInUser = Auth::user();
+        if (!$loggedInUser || !$loggedInUser->isAdmin()) {
+            return redirect()->route("admin.login")->with("error", "管理者アカウントでログインしてください。");
+        }
+        $application = CorrectionApplication::with("attendance.rests")->find($id);
+
+        if (!$application || $application->is_approved === 1) {
+            return redirect()->back()->with("error", "指定された申請が見つからないか、すでに承認されています。");
+        }
+
+        if (!$application->attendance) {
+            return redirect()->back()->with("error", "申請に関連する勤怠情報が見つかりません。");
+        }
+
+        try{
+            DB::transaction(function () use ($application) {
+                // dd($application);
+                $application->is_approved = 1;
+                $application->approved_at = Carbon::now();
+                $application->save();
+
+                $attendance = $application->attendance;
+                // dd($attendance);
+
+                $attendance->notes = $application->notes_after;
+
+                if ($application->clock_in_time_after !== null) {
+                    $attendance->clock_in_time = $application->clock_in_time_after;
+                }
+                if ($application->clock_out_time_after !== null) {
+                    $attendance->clock_out_time = $application->clock_out_time_after;
+                }
+                if ($application->notes_after !== null) {
+                    $attendance->notes = $application->notes_after;
+                }
+
+                $attendance->save();
+
+                $restsAfter = json_decode($application->rests_after, true);
+                // dd($restsAfter);
+
+                if (is_array($restsAfter)) {
+                    $attendance->rests()->delete();
+                    foreach ($restsAfter as $restData) {
+                        if (!empty($restData["start"]) && !empty($restData["end"])) {
+                            $attendance->rests()->create([
+                                "start_time" => $restData["start"],
+                                "end_time" => $restData["end"],
+                            ]);
+                        }
+                    }
+                }
+            });
+        } catch (\Exception $e) {
+            Log::error("勤怠修正申請の承認中にエラーが発生しました: " . $e->getMessage());
+            return redirect()->back()->with("error", "申請の承認中にエラーが発生しました。");
+        }
+
+        return redirect()->route("admin.correctionRequest.list")->with("success", "申請を承認しました。勤怠情報が更新されました。");
     }
 
 

@@ -44,7 +44,7 @@
                         <td>{{ \Carbon\Carbon::parse($application->attendance->date)->isoFormat('YYYY/MM/DD') }}</td>
                         <td>{{ $application->notes_after ?? $application->notes_before }}</td>
                         <td>{{ \Carbon\Carbon::parse($application->created_at)->isoFormat('YYYY/MM/DD') }}</td>
-                        <td><a href="{{ route('attendance.detail', $application->id) }}" class="detail-link">詳細</a></td>
+                        <td><a href="{{ route('attendance.detail', ['attendance' => $application->attendance->id]) }}" class="detail-link">詳細</a></td>
                     </tr>
                 @empty
                     <tr>

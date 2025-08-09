@@ -26,6 +26,7 @@ class CreateCorrectionApplicationsTable extends Migration
             $table->json("rests_after")->nullable();
             $table->text("notes_after")->nullable();
             $table->tinyInteger("is_approved")->nullable()->default(null);
+            $table->timestamp("approved_at")->nullable();
             $table->timestamps();
         });
     }
