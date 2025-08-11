@@ -10,7 +10,16 @@
             <h1>勤怠一覧</h1>
             <div class="month-navigation">
                 <a href="{{ route("attendance.list", ["year" => $prevMonthYear->year, "month" => $prevMonthYear->month]) }}" class="nav-button">&lt; 前月</a>
-                <span class="current-month">{{ $currentMonthYear }}</span>
+
+                <div class="calendar-container">
+                    <img src="{{ asset('img/calender-img.png') }}" alt="カレンダー" id="calendar-icon" style="cursor: pointer;">
+                    <span class="current-month">{{ $currentMonthYear }}</span>
+                </div>
+                <div id="calendar-modal" class="calendar-modal">
+                    <input type="month" id="date-picker" value="{{ $currentMonthYear }}">
+                    <button id="close-modal">閉じる</button>
+                </div>
+
                 <a href="{{ route("attendance.list", ["year" => $nextMonthYear->year, "month" => $nextMonthYear->month]) }}" class="nav-button">翌月 &gt;</a>
             </div>
         </div>
@@ -47,5 +56,29 @@
 @endsection
 
 @section('scripts')
-    {{-- JavaScript --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const calendarIcon = document.getElementById('calendar-icon');
+        const calendarModal = document.getElementById('calendar-modal');
+        const datePicker = document.getElementById('date-picker');
+        const closeModalButton = document.getElementById('close-modal');
+
+        calendarIcon.addEventListener('click', function() {
+            calendarModal.style.display = 'block';
+        });
+
+        closeModalButton.addEventListener('click', function() {
+            calendarModal.style.display = 'none';
+        });
+
+        datePicker.addEventListener('change', function() {
+            const selectedDate = this.value;
+            const [year, month] = selectedDate.split('-');
+            calendarModal.style.display = 'none';
+            if (selectedDate) {
+                window.location.href = `/attendance/list/${year}/${month}`;
+            }
+        });
+    });
+    </script>
 @endsection

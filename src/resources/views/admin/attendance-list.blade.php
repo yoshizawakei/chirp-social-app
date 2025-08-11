@@ -10,10 +10,18 @@
             <h1>{{ $displayDate->isoFormat("YYYY年MM月DD日") }}の勤怠</h1>
             <div class="day-navigation">
                 <a href="{{ route("admin.attendance.list", ["dateString" => $prevDay]) }}" class="nav-button">&lt; 前日</a>
-                <span class="current-day">{{ $displayDate->isoFormat("YYYY/MM/DD") }}</span>
+                <div class="calendar-container">
+                    <img src="{{ asset('img/calender-img.png') }}" alt="カレンダー" id="calendar-icon" style="cursor: pointer;">
+                    <span class="current-day">{{ $displayDate->isoFormat("YYYY/MM/DD") }}</span>
+                </div>
                 <a href="{{ route("admin.attendance.list", ["dateString" => $nextDay]) }}"
                     class="nav-button">翌日 &gt;</a>
             </div>
+            <div id="calendar-modal" class="calendar-modal">
+                <input type="date" id="date-picker">
+                <button id="close-modal">閉じる</button>
+            </div>
+
         </div>
 
         <table class="attendance-table">
@@ -48,5 +56,27 @@
 @endsection
 
 @section('scripts')
-    {{-- JavaScript --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const calendarIcon = document.getElementById('calendar-icon');
+    const calendarModal = document.getElementById('calendar-modal');
+    const datePicker = document.getElementById('date-picker');
+    const closeModalButton = document.getElementById('close-modal');
+
+    calendarIcon.addEventListener('click', function() {
+        calendarModal.style.display = 'block';
+    });
+
+    closeModalButton.addEventListener('click', function() {
+        calendarModal.style.display = 'none';
+    });
+
+    datePicker.addEventListener('change', function() {
+        const selectedDate = this.value;
+        if (selectedDate) {
+            window.location.href = `/admin/attendance/list/${selectedDate}`;
+        }
+    });
+});
+</script>
 @endsection

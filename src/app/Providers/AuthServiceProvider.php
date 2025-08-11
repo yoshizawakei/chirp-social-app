@@ -41,7 +41,7 @@ class AuthServiceProvider extends ServiceProvider
 
         // VerifyEmail の通知をカスタマイズ
         VerifyEmail::toMailUsing(function ($notifiable, $verificationUrl) {
-            return (new MyVerifyEmailNotification($verificationUrl))->toMail($notifiable);
+            return (new MyVerifyEmailNotification())->toMail($notifiable);
         });
     }
 }

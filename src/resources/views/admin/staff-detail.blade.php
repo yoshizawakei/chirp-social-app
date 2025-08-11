@@ -9,12 +9,17 @@
         <div class="attendance-list__header">
             <h1>{{ $targetUser->name }}の勤怠</h1>
             <div class="day-navigation">
-                <a href="{{ route("admin.staff.detail", ["id" => $id, "year" => $prevMonth->year, "month" => $prevMonth->month
-                ]) }}" class="nav-button">&lt; 前月</a>
+                <a href="{{ route("admin.staff.detail",["id" => $id, "year" => $prevMonth->year, "month" => $prevMonth->month]) }}" class="nav-button">&lt; 前月</a>
 
                 <span class="current-day">
+                    <img src="{{ asset('img/calender-img.png') }}" alt="カレンダー" id="calendar-icon" style="cursor: pointer;">
                     <i class="fa-solid fa-calendar-days"></i> {{ $displayMonth->isoFormat("YYYY/MM") }}
                 </span>
+                <div id="calendar-modal" class="calendar-modal">
+                    <input type="month" id="date-picker" value="{{ $displayMonth->format('Y-m') }}">
+                    <input type="hidden" id="user-id" value="{{ $id }}">
+                    <button id="close-modal">閉じる</button>
+                </div>
 
                 <a href="{{ route("admin.staff.detail", ["id" => $id, "year" => $nextMonth->year, "month" => $nextMonth->month]) }}" class="nav-button">翌月 &gt;</a>
             </div>
@@ -56,4 +61,33 @@
             </form>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarIcon = document.getElementById('calendar-icon');
+            const calendarModal = document.getElementById('calendar-modal');
+            const datePicker = document.getElementById('date-picker');
+            const closeModalButton = document.getElementById('close-modal');
+            const userId = document.getElementById('user-id').value;
+
+            calendarIcon.addEventListener('click', function () {
+                calendarModal.style.display = 'block';
+            });
+
+            closeModalButton.addEventListener('click', function () {
+                calendarModal.style.display = 'none';
+            });
+
+            datePicker.addEventListener('change', function () {
+                const selectedDate = this.value;
+                if (selectedDate) {
+                    const [year, month] = selectedDate.split('-');
+                    const $id = userId;
+                    window.location.href = `/admin/attendance/staff/${$id}/${year}/${month}`;
+                }
+            });
+        });
+    </script>
 @endsection

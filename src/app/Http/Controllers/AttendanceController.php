@@ -265,8 +265,8 @@ class AttendanceController extends Controller
 
         $attendance->load("rests");
 
-        $formattedDateYear = Carbon::parse($attendance->date)->isoFormat("YYYY年");
-        $formattedDateMonthDay = Carbon::parse($attendance->date)->isoFormat("M月D日");
+        $formattedDateYear = Carbon::parse((string) $attendance->date)->isoFormat("YYYY年");
+        $formattedDateMonthDay = Carbon::parse((string) $attendance->date)->isoFormat("M月D日");
 
         $formattedClockInTime = $attendance->clock_in_time ? Carbon::parse($attendance->clock_in_time)->format("H:i") : "";
         $formattedClockOutTime = $attendance->clock_out_time ? Carbon::parse($attendance->clock_out_time)->format("H:i") : "";
@@ -341,6 +341,7 @@ class AttendanceController extends Controller
         } elseif ($isApproved === 1) {
             return "承認済み";
         }
+        return "不明なステータス";
     }
 
     // 勤怠修正申請
