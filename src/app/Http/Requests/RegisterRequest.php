@@ -30,4 +30,17 @@ class RegisterRequest extends FormRequest
             "password_confirmation" => "required|string|same:password",
         ];
     }
+
+    public function messages()
+    {
+        return [
+            "name.required" => "お名前を入力してください。",
+            "email.required" => "メールアドレスを入力してください。",
+            "email.email" => "有効なメールアドレスを入力してください。",
+            "email.unique" => "このメールアドレスはすでに使用されています。",
+            "password.required" => "パスワードを入力してください。",
+            "password.min" => "パスワードは8文字以上で入力してください。",
+            "password.confirmed" => "パスワードと一致しません。",
+        ];
+    }
 }

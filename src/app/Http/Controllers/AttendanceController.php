@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Attendance;
 use App\Models\Rest;
 use Carbon\Carbon;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\CorrectionRequest;
 
 
 class AttendanceController extends Controller
@@ -19,7 +22,7 @@ class AttendanceController extends Controller
         return view("auth.login");
     }
     // ユーザーログイン処理
-    public function authenticate(Request $request)
+    public function authenticate(LoginRequest $request)
     {
         $credentials = $request->only("email", "password");
 
@@ -27,7 +30,27 @@ class AttendanceController extends Controller
             return redirect()->route("attendance.index");
         }
 
-        return redirect()->route("attendance.login")->with("error", "メールアドレスまたはパスワードが正しくありません。");
+        return redirect()->route("attendance.login");
+    }
+    
+    // ユーザー登録画面
+    public function register()
+    {
+        return view("auth.register");
+    }
+
+    // ユーザー登録処理
+    public function store(RegisterRequest $request)
+    {
+        $user = \App\Models\User::create([
+            "name" => $request->name,
+            "email" => $request->email,
+            "password" => bcrypt($request->password),
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route("attendance.index")->with("success", "ユーザー登録が完了しました。");
     }
 
     // 勤怠の基本画面
@@ -345,7 +368,7 @@ class AttendanceController extends Controller
     }
 
     // 勤怠修正申請
-    public function requestModify(Request $request, $id)
+    public function requestModify(CorrectionRequest $request, $id)
     {
         $user = Auth::user();
 

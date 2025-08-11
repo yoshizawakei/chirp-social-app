@@ -23,7 +23,12 @@ use Illuminate\Support\Facades\Auth;
 Route::get("/", [AttendanceController::class, "login"])->name("attendance.login");
 // ユーザーログイン処理
 Route::post("/login", [AttendanceController::class, "authenticate"])->name("attendance.authenticate");
+// ユーザー登録画面
+Route::get("/register", [AttendanceController::class, "register"])->name("attendance.register");
+// ユーザー登録処理
+Route::post("/register", [AttendanceController::class, "store"])->name("attendance.store");
 
+// ユーザー関係
 Route::middleware(["auth"])->group(function () {
     // 勤怠関係
     Route::get("/attendance", [AttendanceController::class, "index"])->name("attendance.index");
@@ -48,6 +53,8 @@ Route::middleware(["auth"])->group(function () {
     Route::get("/application/detail/{application}", [ApplicationController::class, "detail"])->name("application.detail");
 });
 
+
+// 管理者関係
 // 管理者ログイン
 Route::get("/admin/login", [AdminController::class, "login"])->name("admin.login");
 // 管理者ログイン処理
@@ -62,12 +69,15 @@ Route::post("/admin/attendance/modify/{id}", [AdminController::class, "modifyAtt
 Route::get("/admin/staff/list", [AdminController::class, "staffList"])->name("admin.staff.list");
 // スタッフ別勤怠一覧
 Route::get("/admin/attendance/staff/{id}/{year?}/{month?}", [AdminController::class, "staffDetail"])->name("admin.staff.detail");
+// スタッフ別勤怠一覧CSV出力
+Route::post("/admin/staff/{id}/{year?}/{month?}/csv", [AdminController::class, "exportCsv"])->name("admin.staff.exportCsv");
 // 管理者修正申請一覧
 Route::get("/admin/stamp_correction_request/list", [AdminController::class, "correctionRequestList"])->name("admin.correctionRequest.list");
 // 管理者修正申請詳細
 Route::get("/admin/stamp_correction_request/detail/{attendance}", [AdminController::class, "correctionRequestDetail"])->name("admin.correctionRequest.detail");
 // 管理者承認処理
 Route::post("/admin/stamp_correction_request/approve/{id}", [AdminController::class, "approveCorrection"])->name("admin.correctionRequest.approve");
+
 
 // ログアウト
 Route::post("/logout", function () {

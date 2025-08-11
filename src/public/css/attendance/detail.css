@@ -185,6 +185,14 @@ form {
     color: #FF0000;
 }
 
+.error-message {
+    color: #FF5555;
+    font-size: 14px;
+    display: block;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
 @media (max-width: 768px) {
     .page-title {
         font-size: 22px;

@@ -55,7 +55,7 @@
         </table>
 
         <div class="csv-output">
-            <form action="#" method="POST">
+            <form action="{{ route("admin.staff.exportCsv", ["id" => $id, "year" => $displayMonth->year, "month" => $displayMonth->month]) }}" method="POST">
             @csrf
                 <button type="submit" class="csv-button">CSV出力</button>
             </form>

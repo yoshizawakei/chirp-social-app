@@ -31,8 +31,14 @@
                             <td class="detail-value time-range">
                                 @if ($isEditable)
                                     <input name="clock_in_time_after" type="text" class="text-field time-field" value="{{ $formattedClockInTime }}">
+                                    @error('clock_in_time_after')
+                                        <span class="error-message">{{ $message }}</span>
+                                    @enderror
                                     <span class="separator">~</span>
                                     <input name="clock_out_time_after" type="text" class="text-field time-field" value="{{ $formattedClockOutTime }}">
+                                    @error('clock_out_time_after')
+                                        <span class="error-message">{{ $message }}</span>
+                                    @enderror
                                 @else
                                     <span class="text-field date-name-field">{{ $formattedClockInTime }}</span>
                                     <span class="separator">~</span>
@@ -45,8 +51,14 @@
                             <td class="detail-value time-range">
                                 @if ($isEditable)
                                     <input name="rests_after[0][start]" type="text" class="text-field time-field" value="{{ $formattedRest1Start }}">
+                                    @error('rests_after.0.start')
+                                        <span class="error-message">{{ $message }}</span>
+                                    @enderror
                                     <span class="separator">~</span>
                                     <input name="rests_after[0][end]" type="text" class="text-field time-field" value="{{ $formattedRest1End }}">
+                                    @error('rests_after.0.end')
+                                        <span class="error-message">{{ $message }}</span>
+                                    @enderror
                                 @else
                                     <span class="text-field date-name-field">{{ $formattedRest1Start }}</span>
                                     <span class="separator">~</span>
@@ -59,8 +71,14 @@
                             <td class="detail-value time-range">
                                 @if ($isEditable)
                                     <input name="rests_after[1][start]" type="text" class="text-field time-field" value="{{ $formattedRest2Start }}">
+                                    @error('rests_after.1.start')
+                                        <span class="error-message">{{ $message }}</span>
+                                    @enderror
                                     <span class="separator">~</span>
                                     <input name="rests_after[1][end]" type="text" class="text-field time-field" value="{{ $formattedRest2End }}">
+                                    @error('rests_after.1.end')
+                                        <span class="error-message">{{ $message }}</span>
+                                    @enderror
                                 @else
                                     <span class="text-field date-name-field">{{ $formattedRest2Start }}</span>
                                     <span class="separator">~</span>
@@ -73,6 +91,9 @@
                             <td class="detail-value memo-cell">
                                 @if ($isEditable)
                                     <textarea name="notes_after" class="memo-textarea">{{ $formattedNotes }}</textarea>
+                                    @error('notes_after')
+                                        <span class="error-message">{{ $message }}</span>
+                                    @enderror
                                 @else
                                     <p>{{ $formattedNotes }}</p>
                                 @endif

@@ -11,6 +11,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\CorrectionRequest;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 
 class AdminController extends Controller
@@ -22,23 +25,18 @@ class AdminController extends Controller
     }
 
     // 管理者ログイン処理
-    public function authenticate(Request $request)
+    public function authenticate(LoginRequest $request)
     {
         $credentials = $request->only("email", "password");
 
-        // ログイン認証を試行
         if (Auth::attempt($credentials)) {
-            // 認証成功後、ユーザーが管理者かチェック
             if (Auth::user()->isAdmin()) {
-                // 管理者の場合、管理者用の勤怠一覧ページにリダイレクト
                 return redirect()->route("admin.attendance.list")->with("success", "管理者としてログインしました。");
             } else {
-                // 管理者でない場合、ログアウトさせてエラーメッセージを表示
                 Auth::logout();
                 return redirect()->route("admin.login")->with("error", "管理者アカウントでログインしてください。");
             }
         }
-        // 認証失敗の場合
         return redirect()->route("admin.login")->with("error", "メールアドレスまたはパスワードが正しくありません。");
     }
 
@@ -202,7 +200,7 @@ class AdminController extends Controller
     }
 
     // 勤怠修正
-    public function modifyAttendance(Request $request, $id)
+    public function modifyAttendance(CorrectionRequest $request, $id)
     {
         $user = Auth::user();
 
@@ -346,6 +344,62 @@ class AdminController extends Controller
             "id",
         ));
     }
+
+    // スタップ別勤怠CSV出力
+    public function exportCsv(Request $request, $id, $year, $month)
+    {
+        $targetUser = User::findOrFail($id);
+        $displayMonth = Carbon::create($year, $month, 1);
+        $startDate = $displayMonth->copy()->startOfMonth();
+        $endDate = $displayMonth->copy()->endOfMonth();
+
+        $attendances = Attendance::where("user_id", $id)
+            ->whereBetween("date", [$startDate, $endDate])
+            ->with("user", "rests")
+            ->get();
+
+        $response = new StreamedResponse(function() use ($attendances, $targetUser) {
+            $stream = fopen("php://output", "w");
+            $header = ["氏名", "日付", "出勤時間", "退勤時間", "休憩時間", "勤務時間"];
+            fputcsv($stream, $header);
+
+            foreach ($attendances as $attendance) {
+                $totalBreakTime = 0;
+                foreach ($attendance->rests as $rest) {
+                    if ($rest->start_time && $rest->end_time) {
+                        $start = Carbon::parse($rest->start_time);
+                        $end = Carbon::parse($rest->end_time);
+                        $totalBreakTime += $end->diffInMinutes($start);
+                    }
+                }
+
+                $totalWorkTime = 0;
+                if ($attendance->clock_in_time && $attendance->clock_out_time) {
+                    $clockIn = Carbon::parse($attendance->clock_in_time);
+                    $clockOut = Carbon::parse($attendance->clock_out_time);
+                    $totalWorkTime = $clockOut->diffInMinutes($clockIn) - $totalBreakTime;
+                }
+
+                fputcsv($stream, [
+                    $targetUser->name,
+                    $attendance->date,
+                    $attendance->clock_in_time ? Carbon::parse($attendance->clock_in_time)->format("H:i") : "-",
+                    $attendance->clock_out_time ? Carbon::parse($attendance->clock_out_time)->format("H:i") : "-",
+                    sprintf("%02d:%02d", floor($totalBreakTime / 60), $totalBreakTime % 60),
+                    sprintf("%02d:%02d", floor($totalWorkTime / 60), $totalWorkTime % 60),
+                ]);
+            }
+
+            fclose($stream);
+        });
+
+        $filename = "{$targetUser->name}_勤怠情報_{$year}年{$month}月.csv";
+        $response->headers->set("Content-Type", "text/csv");
+        $response->headers->set("Content-Disposition", "attachment; filename=\"{$filename}\"");
+
+        return $response;
+    }
+
 
     // 修正申請一覧
     public function correctionRequestList(Request $request)
