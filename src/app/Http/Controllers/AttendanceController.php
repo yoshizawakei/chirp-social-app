@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\CorrectionRequest;
+use App\Models\User;
 
 
 class AttendanceController extends Controller
@@ -27,12 +28,21 @@ class AttendanceController extends Controller
         $credentials = $request->only("email", "password");
 
         if (Auth::attempt($credentials)) {
+            if (!Auth::user()->hasVerifiedEmail()) {
+            return redirect()->route("attendance.verifyEmail")->with("error", "メールアドレスが確認されていません。");
+            }
             return redirect()->route("attendance.index");
         }
 
         return redirect()->route("attendance.login");
     }
-    
+
+    // メール認証画面
+    public function verifyEmail()
+    {
+        return view("auth.verify-email");
+    }
+
     // ユーザー登録画面
     public function register()
     {
@@ -42,7 +52,7 @@ class AttendanceController extends Controller
     // ユーザー登録処理
     public function store(RegisterRequest $request)
     {
-        $user = \App\Models\User::create([
+        $user = User::create([
             "name" => $request->name,
             "email" => $request->email,
             "password" => bcrypt($request->password),

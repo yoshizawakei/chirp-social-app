@@ -28,6 +28,18 @@ class UsersTableSeeder extends Seeder
         ]);
         DB::table("users")->insert([
             [
+                "name" => "山田花子",
+                "email" => "test@example.co.nz",
+                "email_verified_at" => null,
+                "password" => bcrypt("password"),
+                "role" => 1, // 一般ユーザー
+                "remember_token" => null,
+                "created_at" => now(),
+                "updated_at" => now(),
+            ],
+        ]);
+        DB::table("users")->insert([
+            [
                 "name" => "佐藤花子",
                 "email" => "test@example.co.jp",
                 "email_verified_at" => null,

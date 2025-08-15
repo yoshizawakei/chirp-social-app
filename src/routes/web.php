@@ -27,6 +27,8 @@ Route::post("/login", [AttendanceController::class, "authenticate"])->name("atte
 Route::get("/register", [AttendanceController::class, "register"])->name("attendance.register");
 // ユーザー登録処理
 Route::post("/register", [AttendanceController::class, "store"])->name("attendance.store");
+// メールアドレス確認
+Route::get("/email/verify", [AttendanceController::class, "verifyEmail"])->name("attendance.verifyEmail");
 
 // ユーザー関係
 Route::middleware(["auth"])->group(function () {

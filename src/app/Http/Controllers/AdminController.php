@@ -353,17 +353,19 @@ class AdminController extends Controller
         $startDate = $displayMonth->copy()->startOfMonth();
         $endDate = $displayMonth->copy()->endOfMonth();
 
+        // restsリレーションをロード
         $attendances = Attendance::where("user_id", $id)
             ->whereBetween("date", [$startDate, $endDate])
-            ->with("user", "rests")
+            ->with("user", "rests") // ここに"rests"を追加
             ->get();
 
-        $response = new StreamedResponse(function() use ($attendances, $targetUser) {
+        $response = new StreamedResponse(function () use ($attendances, $targetUser) {
             $stream = fopen("php://output", "w");
             $header = ["氏名", "日付", "出勤時間", "退勤時間", "休憩時間", "勤務時間"];
             fputcsv($stream, $header);
 
             foreach ($attendances as $attendance) {
+                // 休憩時間の合計を計算
                 $totalBreakTime = 0;
                 foreach ($attendance->rests as $rest) {
                     if ($rest->start_time && $rest->end_time) {
@@ -373,6 +375,7 @@ class AdminController extends Controller
                     }
                 }
 
+                // 勤務時間の合計を計算
                 $totalWorkTime = 0;
                 if ($attendance->clock_in_time && $attendance->clock_out_time) {
                     $clockIn = Carbon::parse($attendance->clock_in_time);
@@ -380,6 +383,7 @@ class AdminController extends Controller
                     $totalWorkTime = $clockOut->diffInMinutes($clockIn) - $totalBreakTime;
                 }
 
+                // 計算した値をCSVに書き込む
                 fputcsv($stream, [
                     $targetUser->name,
                     $attendance->date,
