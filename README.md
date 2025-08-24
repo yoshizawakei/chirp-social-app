@@ -111,9 +111,37 @@ password: password
 docker-compose exec mysql bash
 mysql -u root -p
 //パスワードはrootと入力
-create database test_database;
+CREATE DATABASE test_database;
+
+//configディレクトリの中のdatabase.phpを開き、mysqlの配列部分をコピーして新たにmysql_testを作成。
+次に、配列の中のdatabase、username、passwordは以下のように変更。
+'database' => 'demo_test',
+'username' => 'root',
+'password' => 'root',
+
+//テスト用の.envファイル作成
+cp .env .env.testing
+.env.testingを以下のとおり編集
+APP_ENV=test
+APP_KEY=
+DB_DATABASE=demo_test
+DB_USERNAME=root
+DB_PASSWORD=root
 
 docker-compose exec php bash
-php artisan migrate:fresh --env=testing
+php artisan key:generate --env=testing
+php artisan migrate --env=testing
+
+//phpunit.xmlを開き、DB_CONNECTIONとDB_DATABASEを以下のように変更
+<server name="DB_CONNECTION" value="mysql_test"/>
+<server name="DB_DATABASE" value="demo_test"/>
+
+//テストの実行
 ./vendor/bin/phpunit
+
+//ブラウザテストを実行する場合
+composer require laravel/dusk --dev
+php artisan dusk:install
+.envと.env.testingのAPP_URLをhttp://nginxに変更
+php artisan dusk
 ```

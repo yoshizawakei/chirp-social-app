@@ -54,11 +54,9 @@
                 登録する
             </button>
 
-            @if (Route::has('login'))
-                <a class="login-link" href="/login">
-                    ログインはこちら
-                </a>
-            @endif
+            <a class="login-link" href="/login">
+                ログインはこちら
+            </a>
         </form>
     </div>
 @endsection

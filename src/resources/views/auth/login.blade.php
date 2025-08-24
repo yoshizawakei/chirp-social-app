@@ -33,11 +33,10 @@
                 ログインする
             </button>
 
-            @if (Route::has('register'))
-                <a class="register-link" href="/register">
-                    会員登録はこちら
-                </a>
-            @endif
+            <a class="register-link" href="/register">
+                会員登録はこちら
+            </a>
+
         </form>
     </div>
 @endsection

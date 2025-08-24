@@ -19,6 +19,9 @@ services:
     depends_on:
       - mysql
       - chromedriver
+    environment:
+      - APP_ENV=local
+      - DUSK_DRIVER_URL=http://chromedriver:4444
 
   mysql:
     image: mysql:8.0.26
