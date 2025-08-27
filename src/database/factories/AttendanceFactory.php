@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Attendance;
 use Carbon\Carbon;
 
+
 class AttendanceFactory extends Factory
 {
     /**
