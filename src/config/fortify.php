@@ -161,13 +161,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    Fortify Requests
+    | Fortify Actions
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the actions that Fortify will use for various
+    | authentication and registration tasks. You can customize these classes
+    | to add additional logic or modify the existing ones.
+    |
+    */
+    'actions' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Fortify Requests
     |--------------------------------------------------------------------------
     |
     | Here you may specify the request classes that Fortify will use for
     | validating the incoming requests. You can customize these classes
     | to add additional validation rules or modify the existing ones.
-    |--------------------------------------------------------------------------
+    |
     */
     'requests' => [
         'login' => \App\Http\Requests\LoginRequest::class,

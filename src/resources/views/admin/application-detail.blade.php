@@ -89,7 +89,7 @@
             </div>
 
             <div class="action-buttons">
-                @if (!$isEditable)
+                @if ($isEditable)
                     <button type="submit" class="action-button submit-button">承認</button>
                     <button type="button" class="action-button cancel-button" onclick="history.back()">戻る</button>
                 @else

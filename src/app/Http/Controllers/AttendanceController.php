@@ -40,6 +40,9 @@ class AttendanceController extends Controller
     // メール認証画面
     public function verifyEmail()
     {
+        if (Auth::check() && Auth::user()->hasVerifiedEmail()) {
+            return redirect()->route("attendance.index");
+        }
         return view("auth.verify-email");
     }
 
@@ -59,6 +62,11 @@ class AttendanceController extends Controller
         ]);
 
         Auth::login($user);
+
+        if ($user->email_verified_at === null) {
+            $user->sendEmailVerificationNotification();
+            return redirect()->route("attendance.verifyEmail");
+        }
 
         return redirect()->route("attendance.index")->with("success", "ユーザー登録が完了しました。");
     }

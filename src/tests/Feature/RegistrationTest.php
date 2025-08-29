@@ -76,7 +76,7 @@ class RegistrationTest extends TestCase
 
         $response = $this->post('/register', $userData);
 
-        $response->assertRedirect('/attendance');
+        $response->assertRedirect('/email/verify');
 
         $this->assertDatabaseHas('users', [
             'email' => 'user@example.com',

@@ -37,7 +37,6 @@ class LoginRequest extends FormRequest
             "email.exists" => "ログイン情報が登録されていません。",
             "password.required" => "パスワードを入力してください。",
             "password.min" => "パスワードは8文字以上で入力してください。",
-            "password.exists" => "ログイン情報が登録されていません。",
         ];
     }
 }

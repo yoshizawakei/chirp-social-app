@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Attendance;
+use App\Models\CorrectionApplication;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -42,7 +44,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-
     ];
 
     /**
@@ -54,17 +55,29 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 2; // 管理者の役割は2
     }
 
+    /**
+     * ユーザーが一般ユーザーかどうかを確認する
+     * @return bool
+     */
     public function isUser(): bool
     {
         return $this->role === 1; // 一般ユーザーの役割は1
     }
 
 
+    /**
+     * ユーザーに関連する勤怠情報を取得
+     * @return HasMany
+     */
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
     }
 
+    /**
+     * ユーザーに関連する勤怠修正申請を取得
+     * @return HasMany
+     */
     public function correctionApplications(): HasMany
     {
         return $this->hasMany(CorrectionApplication::class);
