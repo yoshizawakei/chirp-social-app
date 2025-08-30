@@ -152,7 +152,7 @@ body {
     margin-right: 5px;
 }
 
-/* レスポンシブ対応 (簡易版) */
+/* レスポンシブ対応 */
 @media (max-width: 768px) {
     .attendance-list-container {
         padding: 20px;
@@ -162,7 +162,7 @@ body {
     .attendance-table th,
     .attendance-table td {
         padding: 8px 10px;
-        font-size: 14px;
+        font-size: 12px;
     }
 
     .attendance-list__header {
@@ -170,9 +170,125 @@ body {
         gap: 15px;
     }
 
-    .month-navigation {
-        width: 100%;
-        justify-content: space-around;
+    .attendance-list__header h1 {
+        font-size: 20px;
+        margin-bottom: 25px;
     }
 
+    .day-navigation {
+        font-size: 12px;
+        padding: 9px 15px;
+    }
+
+    .nav-button {
+        font-size: 12px;
+    }
+
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .attendance-list-container {
+        padding: 25px;
+        margin: 30px auto;
+    }
+
+    .attendance-list__header h1 {
+        font-size: 24px;
+        margin-bottom: 25px;
+    }
+
+    .day-navigation {
+        font-size: 17px;
+        padding: 9px 15px;
+    }
+
+    .nav-button {
+        font-size: 15px;
+    }
+
+    .current-day {
+        font-size: 17px;
+        min-width: 80px;
+    }
+
+    .attendance-table {
+        display: table;
+        overflow-x: visible;
+    }
+
+    .attendance-table thead {
+        display: table-header-group;
+    }
+
+    .attendance-table tbody tr {
+        display: table-row;
+    }
+
+    .attendance-table td {
+        display: table-cell;
+        padding: 10px 12px;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+        padding-left: 12px;
+
+    }
+
+    .attendance-table td::before {
+        content: none;
+    }
+}
+
+@media (min-width: 1025px) {
+    .attendance-list-container {
+        padding: 30px;
+        margin: 50px auto;
+    }
+
+    .attendance-list__header h1 {
+        font-size: 26px;
+        margin-bottom: 35px;
+    }
+
+    .day-navigation {
+        font-size: 18px;
+        padding: 10px 20px;
+    }
+
+    .nav-button {
+        font-size: 16px;
+    }
+
+    .current-day {
+        font-size: 18px;
+        min-width: 100px;
+    }
+
+    .attendance-table {
+        display: table;
+        overflow-x: visible;
+    }
+
+    .attendance-table thead {
+        display: table-header-group;
+    }
+
+    .attendance-table tbody tr {
+        display: table-row;
+    }
+
+    .attendance-table td {
+        display: table-cell;
+        padding: 12px 15px;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+        padding-left: 15px;
+    }
+
+    .attendance-table td::before {
+        content: none;
+    }
+
+    .csv-output form {
+        text-align: right;
+    }
 }

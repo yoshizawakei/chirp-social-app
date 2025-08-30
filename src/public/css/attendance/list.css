@@ -135,7 +135,43 @@ body {
     color: #737373;
 }
 
-/* レスポンシブ対応 (簡易版) */
+@media (max-width: 401px) {
+    .attendance-list-container {
+        padding: 20px;
+        margin: 20px auto;
+    }
+
+    .attendance-list__header h1 {
+        font-size: 16px;
+    }
+
+    .attendance-table th,
+    .attendance-table td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .attendance-list__header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .month-navigation {
+        width: 100%;
+        justify-content: space-around;
+        font-size: 12px;
+    }
+
+    .nav-button {
+        font-size: 12px;
+    }
+
+    .current-month {
+        font-size: 12px;
+    }
+}
+
+/* レスポンシブ対応 (小画面用) */
 @media (max-width: 768px) {
     .attendance-list-container {
         padding: 20px;
@@ -145,7 +181,7 @@ body {
     .attendance-table th,
     .attendance-table td {
         padding: 8px 10px;
-        font-size: 14px;
+        font-size: 12px;
     }
 
     .attendance-list__header {
@@ -156,5 +192,53 @@ body {
     .month-navigation {
         width: 100%;
         justify-content: space-around;
+    }
+}
+
+/* レスポンシブ対応 (中画面用) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .attendance-list-container {
+        padding: 25px;
+        margin: 30px auto;
+    }
+
+    .attendance-list__header h1 {
+        font-size: 24px;
+    }
+
+    .month-navigation {
+        font-size: 17px;
+    }
+
+    .nav-button {
+        font-size: 15px;
+    }
+
+    .current-month {
+        font-size: 17px;
+    }
+}
+
+/* レスポンシブ対応 (大画面用) */
+@media (min-width: 1025px) {
+    .attendance-list-container {
+        padding: 30px;
+        margin: 50px auto;
+    }
+
+    .attendance-list__header h1 {
+        font-size: 26px;
+    }
+
+    .month-navigation {
+        font-size: 18px;
+    }
+
+    .nav-button {
+        font-size: 16px;
+    }
+
+    .current-month {
+        font-size: 18px;
     }
 }

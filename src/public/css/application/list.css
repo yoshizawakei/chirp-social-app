@@ -115,12 +115,17 @@ body {
     .application-table th,
     .application-table td {
         padding: 8px 10px;
-        font-size: 14px;
+        font-size: 12px;
+    }
+
+    .application-list__header h1 {
+        font-size: 20px;
     }
 
     .tab-navigation {
         width: 100%;
         justify-content: left;
+        font-size: 16px;
     }
 
     .tab-button {

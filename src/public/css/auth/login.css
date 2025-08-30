@@ -80,8 +80,7 @@
 /* レスポンシブ対応 */
 @media (max-width: 576px) {
     .login-container {
-        padding: 30px;
-        margin: 20px;
+        padding: 20px;
     }
 
     .login-title {

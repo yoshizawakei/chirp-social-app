@@ -86,10 +86,11 @@ body {
     .staff-table th,
     .staff-table td {
         padding: 8px 10px;
-        font-size: 14px;
+        font-size: 12px;
     }
 
-    /* .staff-list__header {
-
-    } */
+    .staff-list__header {
+        font-size: 20px;
+        margin-bottom: 25px;
+    }
 }

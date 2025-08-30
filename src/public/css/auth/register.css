@@ -79,8 +79,7 @@
 /* レスポンシブ対応 */
 @media (max-width: 576px) {
     .register-container {
-        padding: 30px;
-        margin: 20px;
+        padding: 20px;
     }
 
     .register-title {
