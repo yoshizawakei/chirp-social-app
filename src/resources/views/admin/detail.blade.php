@@ -30,12 +30,12 @@
                             <th class="detail-label">出勤・退勤</th>
                             <td class="detail-value time-range">
                                 @if ($isEditable)
-                                    <input name="clock_in_time_after" type="text" class="text-field time-field" value="{{ $formattedClockInTime }}">
+                                    <input name="clock_in_time_after" type="text" class="text-field time-field" value="{{ old("clock_in_time_after", $formattedClockInTime) }}">
                                     @error('clock_in_time_after')
                                         <span class="error-message">{{ $message }}</span>
                                     @enderror
                                     <span class="separator">~</span>
-                                    <input name="clock_out_time_after" type="text" class="text-field time-field" value="{{ $formattedClockOutTime }}">
+                                    <input name="clock_out_time_after" type="text" class="text-field time-field" value="{{ old("clock_out_time_after", $formattedClockOutTime) }}">
                                     @error('clock_out_time_after')
                                         <span class="error-message">{{ $message }}</span>
                                     @enderror
@@ -50,12 +50,12 @@
                             <th class="detail-label">休憩</th>
                             <td class="detail-value time-range">
                                 @if ($isEditable)
-                                    <input name="rests_after[0][start]" type="text" class="text-field time-field" value="{{ $formattedRest1Start }}">
+                                    <input name="rests_after[0][start]" type="text" class="text-field time-field" value="{{ old("rests_after[0][start]", $formattedRest1Start) }}">
                                     @error('rests_after.0.start')
                                         <span class="error-message">{{ $message }}</span>
                                     @enderror
                                     <span class="separator">~</span>
-                                    <input name="rests_after[0][end]" type="text" class="text-field time-field" value="{{ $formattedRest1End }}">
+                                    <input name="rests_after[0][end]" type="text" class="text-field time-field" value="{{ old("rests_after[0][end]", $formattedRest1End) }}">
                                     @error('rests_after.0.end')
                                         <span class="error-message">{{ $message }}</span>
                                     @enderror
@@ -70,12 +70,12 @@
                             <th class="detail-label">休憩2</th>
                             <td class="detail-value time-range">
                                 @if ($isEditable)
-                                    <input name="rests_after[1][start]" type="text" class="text-field time-field" value="{{ $formattedRest2Start }}">
+                                    <input name="rests_after[1][start]" type="text" class="text-field time-field" value="{{ old("rests_after[1][start]", $formattedRest2Start) }}">
                                     @error('rests_after.1.start')
                                         <span class="error-message">{{ $message }}</span>
                                     @enderror
                                     <span class="separator">~</span>
-                                    <input name="rests_after[1][end]" type="text" class="text-field time-field" value="{{ $formattedRest2End }}">
+                                    <input name="rests_after[1][end]" type="text" class="text-field time-field" value="{{ old("rests_after[1][end]", $formattedRest2End) }}">
                                     @error('rests_after.1.end')
                                         <span class="error-message">{{ $message }}</span>
                                     @enderror
@@ -90,7 +90,7 @@
                             <th class="detail-label">備考</th>
                             <td class="detail-value memo-cell">
                                 @if ($isEditable)
-                                    <textarea name="notes_after" class="memo-textarea">{{ $formattedNotes }}</textarea>
+                                    <textarea name="notes_after" class="memo-textarea">{{ old("notes_after", $formattedNotes) }}</textarea>
                                     @error('notes_after')
                                         <span class="error-message">{{ $message }}</span>
                                     @enderror
