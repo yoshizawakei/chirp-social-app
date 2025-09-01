@@ -126,13 +126,13 @@ class AdminController extends Controller
         $formattedClockInTime = $attendance->clock_in_time ? Carbon::parse($attendance->clock_in_time)->format("H:i") : "";
         $formattedClockOutTime = $attendance->clock_out_time ? Carbon::parse($attendance->clock_out_time)->format("H:i") : "";
 
-        $rest1 = $attendance->rests->isNotEmpty() ? $attendance->rests->first() : null;
-        $formattedRest1Start = $rest1 && $rest1->start_time ? Carbon::parse($rest1->start_time)->format("H:i") : "";
-        $formattedRest1End = $rest1 && $rest1->end_time ? Carbon::parse($rest1->end_time)->format("H:i") : "";
-
-        $rest2 = $attendance->rests->count() > 1 ? $attendance->rests->get(1) : null;
-        $formattedRest2Start = $rest2 && $rest2->start_time ? Carbon::parse($rest2->start_time)->format("H:i") : "";
-        $formattedRest2End = $rest2 && $rest2->end_time ? Carbon::parse($rest2->end_time)->format("H:i") : "";
+        $formattedRests = [];
+        foreach ($attendance->rests as $rest) {
+            $formattedRests[] = [
+                "start" => $rest->start_time ? Carbon::parse($rest->start_time)->format("H:i") : "",
+                "end" => $rest->end_time ? Carbon::parse($rest->end_time)->format("H:i") : "",
+            ];
+        }
 
         $formattedNotes = $attendance->notes ?? "";
 
@@ -148,15 +148,12 @@ class AdminController extends Controller
 
             $restsAfter = json_decode($correctionApplication->rests_after, true);
             if (is_array($restsAfter)) {
-                if (isset($restsAfter[0])) {
-                    $rest1After = $restsAfter[0];
-                    $formattedRest1Start = $rest1After["start"] ? Carbon::parse($rest1After["start"])->format("H:i") : $formattedRest1Start;
-                    $formattedRest1End = $rest1After["end"] ? Carbon::parse($rest1After["end"])->format("H:i") : $formattedRest1End;
-                }
-                if (isset($restsAfter[1])) {
-                    $rest2After = $restsAfter[1];
-                    $formattedRest2Start = $rest2After["start"] ? Carbon::parse($rest2After["start"])->format("H:i") : $formattedRest2Start;
-                    $formattedRest2End = $rest2After["end"] ? Carbon::parse($rest2After["end"])->format("H:i") : $formattedRest2End;
+                $formattedRests = [];
+                foreach ($restsAfter as $restData) {
+                    $formattedRests[] = [
+                        "start" => $restData["start"] ? Carbon::parse($restData["start"])->format("H:i") : "",
+                        "end" => $restData["end"] ? Carbon::parse($restData["end"])->format("H:i") : "",
+                    ];
                 }
             }
             $formattedNotes = $correctionApplication->notes_after ?? $formattedNotes;
@@ -172,10 +169,7 @@ class AdminController extends Controller
             "formattedDateMonthDay",
             "formattedClockInTime",
             "formattedClockOutTime",
-            "formattedRest1Start",
-            "formattedRest1End",
-            "formattedRest2Start",
-            "formattedRest2End",
+            "formattedRests",
             "formattedNotes",
             "formattedApplicationStatusText",
             "correctionApplication",
@@ -452,13 +446,13 @@ class AdminController extends Controller
         $formattedClockInTime = $attendance->clock_in_time ? Carbon::parse($attendance->clock_in_time)->format("H:i") : "";
         $formattedClockOutTime = $attendance->clock_out_time ? Carbon::parse($attendance->clock_out_time)->format("H:i") : "";
 
-        $rest1 = $attendance->rests->isNotEmpty() ? $attendance->rests->first() : null;
-        $formattedRest1Start = $rest1 && $rest1->start_time ? Carbon::parse($rest1->start_time)->format("H:i") : "";
-        $formattedRest1End = $rest1 && $rest1->end_time ? Carbon::parse($rest1->end_time)->format("H:i") : "";
-
-        $rest2 = $attendance->rests->count() > 1 ? $attendance->rests->get(1) : null;
-        $formattedRest2Start = $rest2 && $rest2->start_time ? Carbon::parse($rest2->start_time)->format("H:i") : "";
-        $formattedRest2End = $rest2 && $rest2->end_time ? Carbon::parse($rest2->end_time)->format("H:i") : "";
+        $formattedRests = [];
+        foreach ($attendance->rests as $rest) {
+            $formattedRests[] = [
+                "start" => $rest->start_time ? Carbon::parse($rest->start_time)->format("H:i") : "",
+                "end" => $rest->end_time ? Carbon::parse($rest->end_time)->format("H:i") : "",
+            ];
+        }
 
         $formattedNotes = $attendance->notes ?? "";
 
@@ -474,15 +468,12 @@ class AdminController extends Controller
 
             $restsAfter = json_decode($correctionApplication->rests_after, true);
             if (is_array($restsAfter)) {
-                if (isset($restsAfter[0])) {
-                    $rest1After = $restsAfter[0];
-                    $formattedRest1Start = $rest1After["start"] ? Carbon::parse($rest1After["start"])->format("H:i") : $formattedRest1Start;
-                    $formattedRest1End = $rest1After["end"] ? Carbon::parse($rest1After["end"])->format("H:i") : $formattedRest1End;
-                }
-                if (isset($restsAfter[1])) {
-                    $rest2After = $restsAfter[1];
-                    $formattedRest2Start = $rest2After["start"] ? Carbon::parse($rest2After["start"])->format("H:i") : $formattedRest2Start;
-                    $formattedRest2End = $rest2After["end"] ? Carbon::parse($rest2After["end"])->format("H:i") : $formattedRest2End;
+                $formattedRests = [];
+                foreach ($restsAfter as $restData) {
+                    $formattedRests[] = [
+                        "start" => $restData["start"] ? Carbon::parse($restData["start"])->format("H:i") : "",
+                        "end" => $restData["end"] ? Carbon::parse($restData["end"])->format("H:i") : "",
+                    ];
                 }
             }
             $formattedNotes = $correctionApplication->notes_after ?? $formattedNotes;
@@ -498,10 +489,7 @@ class AdminController extends Controller
             "formattedDateMonthDay",
             "formattedClockInTime",
             "formattedClockOutTime",
-            "formattedRest1Start",
-            "formattedRest1End",
-            "formattedRest2Start",
-            "formattedRest2End",
+            "formattedRests",
             "formattedNotes",
             "formattedApplicationStatusText",
             "correctionApplication",

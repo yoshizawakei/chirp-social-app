@@ -29,12 +29,12 @@
                         <tr>
                             <th class="detail-label">出勤・退勤</th>
                             <td class="detail-value time-range">
-                                @if ($isEditable)
+                                @if (!$isEditable)
                                     <input name="clock_in_time_after" type="text" class="text-field time-field"
-                                        value="{{ $formattedClockInTime }}">
+                                        value="{{ old("clock_in_time_after", $formattedClockInTime) }}">
                                     <span class="separator">~</span>
                                     <input name="clock_out_time_after" type="text" class="text-field time-field"
-                                        value="{{ $formattedClockOutTime }}">
+                                        value="{{ old("clock_out_time_after", $formattedClockOutTime) }}">
                                 @else
                                     <span class="text-field date-name-field">{{ $formattedClockInTime }}</span>
                                     <span class="separator">~</span>
@@ -42,43 +42,39 @@
                                 @endif
                             </td>
                         </tr>
-                        <tr>
-                            <th class="detail-label">休憩</th>
-                            <td class="detail-value time-range">
-                                @if ($isEditable)
-                                    <input name="rests_after[0][start]" type="text" class="text-field time-field"
-                                        value="{{ $formattedRest1Start }}">
-                                    <span class="separator">~</span>
-                                    <input name="rests_after[0][end]" type="text" class="text-field time-field"
-                                        value="{{ $formattedRest1End }}">
-                                @else
-                                    <span class="text-field date-name-field">{{ $formattedRest1Start }}</span>
-                                    <span class="separator">~</span>
-                                    <span class="text-field date-name-field">{{ $formattedRest1End }}</span>
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="detail-label">休憩2</th>
-                            <td class="detail-value time-range">
-                                @if ($isEditable)
-                                    <input name="rests_after[1][start]" type="text" class="text-field time-field"
-                                        value="{{ $formattedRest2Start }}">
-                                    <span class="separator">~</span>
-                                    <input name="rests_after[1][end]" type="text" class="text-field time-field"
-                                        value="{{ $formattedRest2End }}">
-                                @else
-                                    <span class="text-field date-name-field">{{ $formattedRest2Start }}</span>
-                                    <span class="separator">~</span>
-                                    <span class="text-field date-name-field">{{ $formattedRest2End }}</span>
-                                @endif
-                            </td>
-                        </tr>
+                        @foreach ($formattedRests as $index => $rest)
+                            <tr>
+                                <th class="detail-label">休憩{{ $index + 1 }}</th>
+                                <td class="detail-value time-range">
+                                    @if (!$isEditable)
+                                        <div class="input-group">
+                                            <input name="rests_after[{{ $index }}][start]" type="text" class="text-field time-field"
+                                                value="{{ old("rests_after." . $index . ".start", $rest["start"]) }}">
+                                            @error("rests_after." . $index . ".start")
+                                                <span class="error-message">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                        <span class="separator">~</span>
+                                        <div class="input-group">
+                                            <input name="rests_after[{{ $index }}][end]" type="text" class="text-field time-field"
+                                                value="{{ old("rests_after." . $index . ".end", $rest["end"]) }}">
+                                            @error("rests_after." . $index . ".end")
+                                                <span class="error-message">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    @else
+                                        <span class="text-field date-name-field">{{ $rest["start"] }}</span>
+                                        <span class="separator">~</span>
+                                        <span class="text-field date-name-field">{{ $rest["end"] }}</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
                         <tr>
                             <th class="detail-label">備考</th>
                             <td class="detail-value memo-cell">
-                                @if ($isEditable)
-                                    <textarea name="notes_after" class="memo-textarea">{{ $formattedNotes }}</textarea>
+                                @if (!$isEditable)
+                                    <textarea name="notes_after" class="memo-textarea">{{ old("notes_after", $formattedNotes) }}</textarea>
                                 @else
                                     <p>{{ $formattedNotes }}</p>
                                 @endif
