@@ -55,7 +55,3 @@
         </table>
     </div>
 @endsection
-
-@section('scripts')
-    {{-- 必要に応じてJavaScriptをここに記述 --}}
-@endsection

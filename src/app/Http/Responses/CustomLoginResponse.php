@@ -32,10 +32,8 @@ class CustomLoginResponse implements LoginResponseContract
 
         // ユーザーか管理者かでリダイレクト先を変更
         if ($user->isAdmin()) {
-            // 管理者の場合、管理者のダッシュボードへリダイレクト
             return redirect()->route('admin.attendance.list');
         } elseif ($user->isUser()) {
-            // 一般ユーザーの場合、勤怠一覧へリダイレクト
             return redirect()->route('attendance.index');
         }
 

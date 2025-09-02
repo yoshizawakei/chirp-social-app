@@ -347,10 +347,9 @@ class AdminController extends Controller
         $startDate = $displayMonth->copy()->startOfMonth();
         $endDate = $displayMonth->copy()->endOfMonth();
 
-        // restsリレーションをロード
         $attendances = Attendance::where("user_id", $id)
             ->whereBetween("date", [$startDate, $endDate])
-            ->with("user", "rests") // ここに"rests"を追加
+            ->with("user", "rests")
             ->get();
 
         $response = new StreamedResponse(function () use ($attendances, $targetUser) {
@@ -517,13 +516,11 @@ class AdminController extends Controller
 
         try{
             DB::transaction(function () use ($application) {
-                // dd($application);
                 $application->is_approved = 1;
                 $application->approved_at = Carbon::now();
                 $application->save();
 
                 $attendance = $application->attendance;
-                // dd($attendance);
 
                 $attendance->notes = $application->notes_after;
 
@@ -540,7 +537,6 @@ class AdminController extends Controller
                 $attendance->save();
 
                 $restsAfter = json_decode($application->rests_after, true);
-                // dd($restsAfter);
 
                 if (is_array($restsAfter)) {
                     $attendance->rests()->delete();

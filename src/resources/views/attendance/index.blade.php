@@ -75,12 +75,12 @@
             if (successAlert) {
                 setTimeout(() => {
                     successAlert.style.display = "none";
-                }, 3000); // 3秒後に非表示
+                }, 3000);
             }
             if (errorAlert) {
                 setTimeout(() => {
                     errorAlert.style.display = "none";
-                }, 3000); // 3秒後に非表示
+                }, 3000);
             }
         });
     </script>

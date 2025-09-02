@@ -39,7 +39,7 @@
                     </nav>
                 </div>
             @else
-            
+
             @endif
         </div>
     </header>
