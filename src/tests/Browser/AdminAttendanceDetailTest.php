@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 use App\Models\CorrectionApplication;
+use App\Models\Rest;
 
 class AdminAttendanceDetailTest extends DuskTestCase
 {
@@ -109,10 +110,16 @@ class AdminAttendanceDetailTest extends DuskTestCase
             "clock_out_time" => Carbon::parse("17:00"),
         ]);
 
+        $rest = Rest::create([
+            "attendance_id" => $attendance->id,
+            "start_time" => Carbon::parse("12:00"),
+            "end_time" => Carbon::parse("13:00"),
+        ]);
+
         $this->browse(function (Browser $browser) use ($attendance) {
             $browser->loginAs($this->admin)
                 ->visit("/admin/attendance/{$attendance->id}")
-                ->type("rests_after[0][start]", "18:00")
+                ->type('input[name="rests_after[0][start]"]', "18:00")
                 ->press("修正")
                 ->waitForText("休憩時間が不適切な値です。")
                 ->assertSee("休憩時間が不適切な値です。");
@@ -133,10 +140,16 @@ class AdminAttendanceDetailTest extends DuskTestCase
             "clock_out_time" => Carbon::parse("17:00"),
         ]);
 
+        $rest = Rest::create([
+            "attendance_id" => $attendance->id,
+            "start_time" => Carbon::parse("12:00"),
+            "end_time" => Carbon::parse("13:00"),
+        ]);
+
         $this->browse(function (Browser $browser) use ($attendance) {
             $browser->loginAs($this->admin)
                 ->visit("/admin/attendance/{$attendance->id}")
-                ->type("rests_after[0][end]", "18:00")
+                ->type("input[name='rests_after[0][end]']", "18:00")
                 ->press("修正")
                 ->waitForText("休憩時間もしくは退勤時間が不適切な値です")
                 ->assertSee("休憩時間もしくは退勤時間が不適切な値です");
@@ -155,6 +168,12 @@ class AdminAttendanceDetailTest extends DuskTestCase
             "date" => Carbon::today(),
             "clock_in_time" => Carbon::parse("09:00"),
             "clock_out_time" => Carbon::parse("17:00"),
+        ]);
+
+        $rest = Rest::create([
+            "attendance_id" => $attendance->id,
+            "start_time" => Carbon::parse("12:00"),
+            "end_time" => Carbon::parse("13:00"),
         ]);
 
         $this->browse(function (Browser $browser) use ($attendance) {

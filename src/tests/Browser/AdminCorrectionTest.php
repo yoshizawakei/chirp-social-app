@@ -215,9 +215,9 @@ class AdminCorrectionTest extends DuskTestCase
             "notes_before" => null,
             "clock_in_time_after" => Carbon::parse("09:05")->format("H:i"),
             "clock_out_time_after" => Carbon::parse("17:05")->format("H:i"),
-            "rests_after" => Carbon::parse("00:35")->format("H:i"),
+            "rests_after" => json_encode([["start" => "00:35", "end" => "00:35"]]),
             "notes_after" => "メモ1修正",
-            "is_approved" => null,
+            "is_approved" => 0,
         ]);
 
         $this->browse(function (Browser $browser) use ($correction) {
@@ -265,14 +265,14 @@ class AdminCorrectionTest extends DuskTestCase
             "clock_out_time_after" => Carbon::parse("18:00")->format("H:i"),
             "rests_after" => Carbon::parse("00:35")->format("H:i"),
             "notes_after" => "メモ1修正",
-            "is_approved" => null,
+            "is_approved" => 0,
         ]);
 
         $this->browse(function (Browser $browser) use ($correction) {
             $browser->loginAs($this->admin)
                 ->visit("/admin/stamp_correction_request/detail/{$correction->attendance_id}")
                 ->waitForText("承認")
-                ->assertSee("承認")
+                ->assertSeeIn('.action-buttons', '承認')
                 ->press("承認")
                 ->assertPathIs("/admin/stamp_correction_request/list");
         });

@@ -29,7 +29,7 @@
                         <tr>
                             <th class="detail-label">出勤・退勤</th>
                             <td class="detail-value time-range">
-                                @if (!$isEditable)
+                                @if ($isEditable)
                                     <input name="clock_in_time_after" type="text" class="text-field time-field"
                                         value="{{ old("clock_in_time_after", $formattedClockInTime) }}">
                                     <span class="separator">~</span>
@@ -46,7 +46,7 @@
                             <tr>
                                 <th class="detail-label">休憩{{ $index + 1 }}</th>
                                 <td class="detail-value time-range">
-                                    @if (!$isEditable)
+                                    @if ($isEditable)
                                         <div class="input-group">
                                             <input name="rests_after[{{ $index }}][start]" type="text" class="text-field time-field"
                                                 value="{{ old("rests_after." . $index . ".start", $rest["start"]) }}">
@@ -73,7 +73,7 @@
                         <tr>
                             <th class="detail-label">備考</th>
                             <td class="detail-value memo-cell">
-                                @if (!$isEditable)
+                                @if ($isEditable)
                                     <textarea name="notes_after" class="memo-textarea">{{ old("notes_after", $formattedNotes) }}</textarea>
                                 @else
                                     <p>{{ $formattedNotes }}</p>
@@ -85,7 +85,7 @@
             </div>
 
             <div class="action-buttons">
-                @if (!$isEditable)
+                @if ($isEditable)
                     <button type="submit" class="action-button submit-button">承認</button>
                     <button type="button" class="action-button cancel-button" onclick="history.back()">戻る</button>
                 @else

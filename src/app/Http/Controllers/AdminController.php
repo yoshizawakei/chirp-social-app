@@ -480,7 +480,7 @@ class AdminController extends Controller
 
         $formattedApplicationStatusText = $this->getApprovalStatusText($applicationStatus);
 
-        $isEditable = !($applicationStatus === 0);
+        $isEditable = $applicationStatus === 0;
 
         return view("admin.application-detail", compact(
             "attendance",
