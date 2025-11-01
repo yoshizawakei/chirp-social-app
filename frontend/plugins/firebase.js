@@ -2,13 +2,11 @@
 
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { defineNuxtPlugin } from '#app';
 
-// export default (context, inject) を修正
-// $config の中にある public プロパティを使用します
-export default ({ $config }, inject) => {
+export default defineNuxtPlugin((nuxtApp) => {
 
-  // $config.public から設定値を取得します
-    const config = $config.public;
+    const config = nuxtApp.$config.public;
 
     const firebaseConfig = {
     apiKey: config.FIREBASE_API_KEY,
@@ -25,6 +23,10 @@ export default ({ $config }, inject) => {
     // 2. Firebase Authenticationサービスを取得
     const auth = getAuth(app);
 
-    // 3. Nuxt.jsのコンテキストに注入
-    inject('firebaseAuth', auth);
-};
+    // 3. Nuxt.jsのグローバルなプロパティとして注入
+    return {
+    provide: {
+        firebaseAuth: auth
+    }
+    };
+});

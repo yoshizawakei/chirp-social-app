@@ -15,9 +15,23 @@ export default defineNuxtConfig({
         FIREBASE_MESSAGING_SENDER_ID: process.env.NUXT_ENV_FIREBASE_MESSAGING_SENDER_ID,
         FIREBASE_APP_ID: process.env.NUXT_ENV_FIREBASE_APP_ID,
       }
-    },
+  },
 
   plugins: [
     './plugins/firebase.js', // 作成するプラグインのパス
   ],
+
+  modules: ['@nuxt/devtools'],
+
+  rootDir: './',
+
+  vite: {
+    // Dockerでのファイル監視問題を回避するための設定
+    server: {
+      watch: {
+        usePolling: true // ファイル変更を定期的に確認するように強制
+      }
+    }
+  },
+
 })

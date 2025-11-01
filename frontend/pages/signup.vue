@@ -11,9 +11,9 @@
     <div class="form-wrapper">
       <div class="signup-box">
         <h2 class="title">新規登録</h2>
-        
+
         <form @submit.prevent="signUp" class="signup-form">
-          
+
           <div class="form-group">
             <input type="text" id="username" v-model="username" required maxlength="20" placeholder="ユーザーネーム">
             <p v-if="errors.username" class="error-message">{{ errors.username }}</p>
@@ -28,7 +28,7 @@
             <input type="password" id="password" v-model="password" required minlength="6" placeholder="パスワード">
             <p v-if="errors.password" class="error-message">{{ errors.password }}</p>
           </div>
-          
+
           <p v-if="firebaseError" class="error-message firebase-error">{{ firebaseError }}</p>
 
           <button type="submit" class="submit-button">新規登録</button>
@@ -68,7 +68,7 @@ export default {
       try {
         const auth = this.$firebaseAuth;
         const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
-        
+
         await updateProfile(userCredential.user, {
           displayName: this.username,
         });
