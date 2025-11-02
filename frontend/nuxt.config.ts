@@ -1,37 +1,25 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
-
-  runtimeConfig: {
-      // private: {}, // サーバーサイド専用の変数があればここに
-
-      // public セクション: クライアントサイド（ブラウザ）に公開される変数
-      public: {
-        FIREBASE_API_KEY: process.env.NUXT_ENV_FIREBASE_API_KEY,
-        FIREBASE_AUTH_DOMAIN: process.env.NUXT_ENV_FIREBASE_AUTH_DOMAIN,
-        FIREBASE_PROJECT_ID: process.env.NUXT_ENV_FIREBASE_PROJECT_ID,
-        FIREBASE_STORAGE_BUCKET: process.env.NUXT_ENV_FIREBASE_STORAGE_BUCKET,
-        FIREBASE_MESSAGING_SENDER_ID: process.env.NUXT_ENV_FIREBASE_MESSAGING_SENDER_ID,
-        FIREBASE_APP_ID: process.env.NUXT_ENV_FIREBASE_APP_ID,
-      }
-  },
-
-  plugins: [
-    './plugins/firebase.js', // 作成するプラグインのパス
+export default {
+  // 必須モジュールの設定
+  modules: [
+    // @nuxtjs/axios は削除しました。組み込みの $fetch を使用します。
   ],
 
-  modules: ['@nuxt/devtools'],
+  // 必須プラグインの設定
+  plugins: [
+    '~/plugins/firebase.js',
+    // 💡 Vuexストアを有効にするために必要な設定 (Nuxt 2 の場合)
+  ],
 
-  rootDir: './',
-
-  vite: {
-    // Dockerでのファイル監視問題を回避するための設定
-    server: {
-      watch: {
-        usePolling: true // ファイル変更を定期的に確認するように強制
-      }
-    }
+  // 💡 Firebaseの環境変数をクライアントサイドに公開
+  publicRuntimeConfig: {
+    firebase: {
+      apiKey: process.env.FIREBASE_API_KEY, 
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      appId: process.env.FIREBASE_APP_ID,
+    },
   },
-
-})
+  
+  // 💡 API通信のベースURLを環境変数として設定すると便利です
+  // ただし、$fetchでは各呼び出しでbaseURLを指定する必要があります
+}

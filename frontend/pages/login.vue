@@ -1,59 +1,118 @@
 <template>
-<div class="login-container">
-<div class="login-form">
+<NuxtLayout name="auth">
+<div class="form-container">
+    <div class="auth-box">
     <h2>ログイン</h2>
     <form @submit.prevent="handleLogin">
-    <input v-model="email" type="email" placeholder="メールアドレス" required />
-    <input v-model="password" type="password" placeholder="パスワード" required />
-    <button type="submit">ログイン</button>
+        <input v-model="email" type="email" placeholder="メールアドレス" required class="input-field" />
+        <input v-model="password" type="password" placeholder="パスワード" required class="input-field" />
+        <p v-if="error" class="error-message">{{ error }}</p>
+        <button type="submit" class="auth-button">ログイン</button>
     </form>
-    <p>アカウントをお持ちでない方は <NuxtLink to="/signup">新規登録</NuxtLink> へ</p>
+    <NuxtLink to="/register" class="link-text">新規登録はこちら</NuxtLink>
+    </div>
 </div>
-</div>
+</NuxtLayout>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-const email = ref('')
-const password = ref('')
+<script>
+export default {
+  data() {
+    return {
+      email: '',
+      password: '',
+      error: null,
+    }
+  },
+  methods: {
+    async handleLogin() {
+      this.error = null;
 
-const handleLogin = () => {
-  // ログイン処理をここに実装します
-    console.log('Login attempt with:', email.value, password.value)
-    alert('ログインボタンが押されました。次はAPI連携を実装します！')
+      if (!this.email || !this.password) {
+        this.error = 'メールアドレスとパスワードを入力してください。';
+        return;
+      }
+
+      try {
+        // 1. Firebaseでログイン
+        await this.$auth.signInWithEmailAndPassword(this.email, this.password)
+
+        alert('ログイン成功しました！');
+        this.$router.push('/'); 
+
+      } catch (err) {
+        if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+            this.error = 'メールアドレスまたはパスワードが正しくありません。';
+        } else {
+            this.error = 'ログインに失敗しました。: ' + err.message;
+        }
+      }
+    }
+  }
 }
 </script>
 
 <style scoped>
-/* スタイルは簡略化しています */
-.login-container {
+/* 共通スタイルはlogin.vueのものを参照 */
+.form-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #1e1e2d;
+    min-height: 100vh;
+    padding-top: 80px;
 }
-.login-form {
+.auth-box {
     background: white;
-    padding: 30px;
+    padding: 40px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-input {
-    display: block;
     width: 100%;
-    margin-bottom: 15px;
-    padding: 10px;
+    max-width: 380px;
+    text-align: center;
+    color: #333;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+h2 {
+    font-size: 24px;
+    margin-bottom: 30px;
+    font-weight: 600;
+    color: #333;
+}
+.input-field {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 20px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
 }
-button {
-    padding: 10px 20px;
-    background-color: #5b50f7;
+.auth-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #6a40e7;
     color: white;
     border: none;
     border-radius: 4px;
+    font-size: 16px;
     cursor: pointer;
+    transition: background-color 0.2s;
+}
+.auth-button:hover {
+    background-color: #5b34d9;
+}
+.error-message {
+    color: #e74c3c;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    text-align: left;
+    padding-left: 5px;
+}
+.link-text {
+    color: #6a40e7;
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: 10px;
+    display: inline-block;
 }
 </style>

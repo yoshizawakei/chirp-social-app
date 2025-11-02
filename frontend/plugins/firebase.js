@@ -1,32 +1,20 @@
 // frontend/plugins/firebase.js
+import firebase from 'firebase/app'
+import 'firebase/auth'
 
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { defineNuxtPlugin } from '#app';
+// Nuxt.jsの設定を取得
+const config = require('~/nuxt.config').default.publicRuntimeConfig.firebase;
 
-export default defineNuxtPlugin((nuxtApp) => {
+// SSRを考慮し、ブラウザでのみ初期化
+if (process.browser && config && !firebase.apps.length) {
+  firebase.initializeApp(config)
+}
 
-    const config = nuxtApp.$config.public;
+// 認証サービスのエクスポート
+export const auth = firebase.auth()
 
-    const firebaseConfig = {
-    apiKey: config.FIREBASE_API_KEY,
-    authDomain: config.FIREBASE_AUTH_DOMAIN,
-    projectId: config.FIREBASE_PROJECT_ID,
-    storageBucket: config.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: config.FIREBASE_MESSAGING_SENDER_ID,
-    appId: config.FIREBASE_APP_ID
-    };
-
-    // 1. Firebaseアプリを初期化
-    const app = initializeApp(firebaseConfig);
-
-    // 2. Firebase Authenticationサービスを取得
-    const auth = getAuth(app);
-
-    // 3. Nuxt.jsのグローバルなプロパティとして注入
-    return {
-    provide: {
-        firebaseAuth: auth
-    }
-    };
-});
+// Vueインスタンスに $auth を注入
+export default (context, inject) => {
+  // $authを通じて Firebase Auth 機能にアクセス
+  inject('auth', auth)
+}

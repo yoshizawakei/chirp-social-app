@@ -17,7 +17,7 @@
 <style scoped>
 .auth-layout {
     min-height: 100vh;
-    background-color: #1e1e2d; /* UIの背景色 */
+    /* background-color: #1e1e2d; */
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
