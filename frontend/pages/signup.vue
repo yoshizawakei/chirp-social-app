@@ -3,7 +3,7 @@
     <div class="form-container">
       <div class="auth-box">
         <h2>新規登録</h2>
-        <form @submit.prevent="handleSignup">
+        <form @submit.prevent="registerUser">
           <input
             v-model="name"
             type="text"
@@ -33,56 +33,48 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: 'auth', // 💡 作成済みの auth.vue レイアウトを適用
+})
+
 import { ref } from 'vue'
-import { useRouter } from '@nuxtjs/composition-api'
+import { useRouter } from '#app' 
 import { useNuxtApp } from '#app'
+
+const nuxtApp = useNuxtApp()
+const router = useRouter()
 
 const name = ref('')
 const email = ref('')
 const password = ref('')
-const router = useRouter()
-const error = ref(null)
+const signupError = ref(null)
 
-const { $auth } = useNuxtApp(); 
+const registerUser = async () => {
+  const store = nuxtApp.vueApp.config.globalProperties.$store
+  
+  if (!store) {
+    signupError.value = 'アプリケーションの初期化に失敗しました。'
+    console.error('Vuex store is not initialized.')
+    return
+  }
 
-const handleSignup = async () => {
-    error.value = null;
+  signupError.value = null
 
-    // 📝 要件バリデーション
-    if (name.value.length === 0 || name.value.length > 20) {
-        error.value = 'ユーザーネームは1〜20文字で入力してください。';
-        return;
-    }
-    if (password.value.length < 6) {
-        error.value = 'パスワードは6文字以上で入力してください。';
-        return;
-    }
+  try {
+    // 💡 修正: $auth を渡さずにディスパッチ
+    await store.dispatch('auth/registerUser', { 
+        email: email.value, 
+        password: password.value,
+        name: name.value
+    })
     
-    try {
-        // 1. Firebaseでユーザー登録
-        const userCredential = await $auth.createUserWithEmailAndPassword(email.value, password.value)
-        
-        // 2. ユーザーネームを設定 (要件のユーザーネーム)
-        await userCredential.user.updateProfile({
-          displayName: name.value
-        })
+    // 登録成功後、ログイン画面へリダイレクト
+    router.push('/login') 
 
-        // 3. 認証成功: ホーム画面へリダイレクト
-        alert('新規登録とログインに成功しました！');
-        router.push('/');
-
-    } catch (err) {
-        console.error('新規登録エラー:', err);
-
-        // Firebaseのエラーコードに基づくメッセージ表示
-        if (err.code === 'auth/email-already-in-use') {
-              error.value = 'このメールアドレスは既に使用されています。';
-        } else if (err.code === 'auth/weak-password') {
-              error.value = 'パスワードが弱すぎます。（6文字以上が必要です）';
-        } else {
-            error.value = '登録に失敗しました。: ' + err.message;
-        }
-    }
+  } catch (error) {
+    signupError.value = 'ユーザー登録エラー: ' + error.message
+    console.error('ユーザー登録エラー:', error)
+  }
 }
 </script>
 

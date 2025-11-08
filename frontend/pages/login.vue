@@ -1,59 +1,68 @@
 <template>
-<NuxtLayout name="auth">
 <div class="form-container">
     <div class="auth-box">
     <h2>ログイン</h2>
-    <form @submit.prevent="handleLogin">
+    <form @submit.prevent="loginUser"> 
         <input v-model="email" type="email" placeholder="メールアドレス" required class="input-field" />
         <input v-model="password" type="password" placeholder="パスワード" required class="input-field" />
         <p v-if="error" class="error-message">{{ error }}</p>
         <button type="submit" class="auth-button">ログイン</button>
     </form>
-    <NuxtLink to="/register" class="link-text">新規登録はこちら</NuxtLink>
+    <NuxtLink to="/signup" class="link-text">新規登録はこちら</NuxtLink>
     </div>
 </div>
-</NuxtLayout>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      email: '',
-      password: '',
-      error: null,
-    }
-  },
-  methods: {
-    async handleLogin() {
-      this.error = null;
+<script setup>
+import { ref } from 'vue'
+import { useRouter, useNuxtApp } from '#app' // useNuxtApp は #app からインポート
 
-      if (!this.email || !this.password) {
-        this.error = 'メールアドレスとパスワードを入力してください。';
-        return;
-      }
+// definePageMeta は必ず一番上に来るようにする
+definePageMeta({
+  layout: 'auth', 
+})
 
-      try {
-        // 1. Firebaseでログイン
-        await this.$auth.signInWithEmailAndPassword(this.email, this.password)
+const nuxtApp = useNuxtApp()
+const router = useRouter()
 
-        alert('ログイン成功しました！');
-        this.$router.push('/'); 
+const email = ref('')
+const password = ref('')
+// 💡 修正: 変数名を 'error' に統一
+const error = ref(null) 
 
-      } catch (err) {
-        if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-            this.error = 'メールアドレスまたはパスワードが正しくありません。';
-        } else {
-            this.error = 'ログインに失敗しました。: ' + err.message;
-        }
-      }
-    }
+const loginUser = async () => {
+  const store = nuxtApp.vueApp.config.globalProperties.$store
+
+  if (!store) {
+    error.value = 'アプリケーションの初期化に失敗しました。'
+    console.error('Store is not initialized.')
+    return
+  }
+
+  error.value = null
+
+  try {
+    // 💡 修正: Vuex アクション名を 'loginAction' に修正
+    await store.dispatch('auth/loginAction', { 
+        email: email.value, 
+        password: password.value,
+    })
+    
+    // ログイン成功後、ホーム画面へリダイレクト
+    // router.push('/') の代わりに navigateTo('/') が Nuxtでは推奨
+    await navigateTo('/') 
+
+  } catch (e) {
+    // Firebaseからのエラーメッセージを捕捉
+    error.value = 'ログインに失敗しました: ' + (e.message || '不明なエラー')
+    console.error('ログインエラー:', e)
   }
 }
 </script>
 
 <style scoped>
-/* 共通スタイルはlogin.vueのものを参照 */
+/* スタイルは変更なし */
+/* ... */
 .form-container {
     display: flex;
     justify-content: center;

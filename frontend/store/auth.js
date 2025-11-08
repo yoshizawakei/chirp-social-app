@@ -1,60 +1,87 @@
-// store/auth.js
-// Firebase認証状態管理のためのVuexストアモジュール
+// 💡 frontend/store/auth.js
+// Firebase関連のインポート (お使いのインポートを維持)
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut 
+} from 'firebase/auth' 
+import { initializeApp } from 'firebase/app' 
+// import router from 'vue-router' // Nuxtでは use/navigateTo を使うため、これは不要
 
-const defaultUser = { uid: null, name: null, email: null };
+// 💡 Vuexモジュールをデフォルトエクスポートとして定義
+export default {
+    // 💡 名前空間を有効にする
+    namespaced: true, 
 
-export const state = () => ({
-  loggedIn: false,
-  user: defaultUser,
-  authChecked: false, // 認証チェック完了フラグ
-});
+    state: () => ({
+        user: null,
+        authChecked: false, // 認証チェックが完了したかを示すフラグ
+    }),
 
-export const mutations = {
-  setUser(state, user) {
-    if (user && user.uid) {
-      state.user = {
-        uid: user.uid,
-        name: user.displayName || user.email.split('@')[0], // 名前がない場合はメールアドレスから生成
-        email: user.email,
-      };
-      state.loggedIn = true;
-    } else {
-      state.user = defaultUser;
-      state.loggedIn = false;
+    mutations: {
+        setUser(state, user) {
+            state.user = user
+        },
+        setAuthChecked(state, status) {
+            state.authChecked = status
+        }
+    },
+
+    actions: {
+        // 認証状態の変更監視 (アプリ起動時に呼び出される)
+        onAuthStateChangedAction({ commit }) {
+            return new Promise((resolve) => {
+                if (process.client) {
+                    try {
+                        const auth = getAuth()
+                        
+                        onAuthStateChanged(auth, user => { 
+                            // ユーザーがログイン状態の場合
+                            commit('setUser', user)
+                            commit('setAuthChecked', true)
+                            resolve(user)
+                        })
+                    } catch (e) {
+                        console.error("Firebase Auth 初期化エラー:", e);
+                        commit('setAuthChecked', true);
+                        resolve(null);
+                    }
+                } else {
+                    // サーバーサイドではすぐに解決
+                    commit('setAuthChecked', true)
+                    resolve(null)
+                }
+            })
+        },
+        
+        // ユーザー登録
+        async signUpAction({ dispatch }, { email, password }) {
+            const auth = getAuth()
+            await createUserWithEmailAndPassword(auth, email, password)
+            // 登録後、認証状態の更新を待つ
+            await dispatch('onAuthStateChangedAction') 
+        },
+
+        // ログイン
+        async loginAction({ dispatch }, { email, password }) {
+            const auth = getAuth()
+            await signInWithEmailAndPassword(auth, email, password)
+            await dispatch('onAuthStateChangedAction') 
+        },
+
+        // ログアウト
+        async logoutAction({ commit }) {
+            const auth = getAuth()
+            await signOut(auth)
+            // ログアウト後、ユーザー情報をクリア
+            commit('setUser', null) 
+            // 💡 ログアウト後のリダイレクトはコンポーネント側で行うのがベスト
+        }
+    },
+
+    getters: {
+        isLoggedIn: (state) => !!state.user
     }
-  },
-  setAuthChecked(state, status) {
-      state.authChecked = status;
-  }
-};
-
-export const actions = {
-  // Firebaseの認証状態の変化を監視し、ログイン/ログアウトを検知
-  onAuthStateChangedAction({ commit }) {
-    return new Promise((resolve) => {
-      this.$auth.onAuthStateChanged(user => { // 💡 $auth はプラグインで注入されていることを前提
-        commit('setUser', user);
-        commit('setAuthChecked', true);
-        resolve(user);
-      });
-    });
-  },
-
-  // ログアウト処理
-  async logout({ commit }) {
-    try {
-      await this.$auth.signOut();
-      commit('setUser', null);
-    } catch (error) {
-      console.error('Firebaseログアウトエラー:', error);
-      commit('setUser', null);
-    }
-  },
-};
-
-export const getters = {
-    isLoggedIn: state => state.loggedIn,
-    userName: state => state.user.name,
-    userId: state => state.user.uid,
-    authChecked: state => state.authChecked,
-};
+}

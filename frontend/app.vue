@@ -1,17 +1,17 @@
 <template>
   <div>
-    <div v-if="!$store.getters['auth/authChecked']" class="loading-screen">読み込み中...</div>
-    <NuxtPage v-else />
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
   </div>
 </template>
 
-<script>
-export default {
-    mounted() {
-        // 💡 アプリケーション起動時に、Firebase認証状態の監視を開始
-        this.$store.dispatch('auth/onAuthStateChangedAction'); 
-    }
-}
+<script setup>
+import { useNuxtApp } from '#app' 
+import { onMounted } from 'vue'
+
+const nuxtApp = useNuxtApp()
+
 </script>
 
 <style>
