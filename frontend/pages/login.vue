@@ -1,8 +1,9 @@
 <template>
+<NuxtLayout name="auth">
 <div class="form-container">
     <div class="auth-box">
     <h2>ログイン</h2>
-    <form @submit.prevent="loginUser"> 
+    <form @submit.prevent="loginUser">
         <input v-model="email" type="email" placeholder="メールアドレス" required class="input-field" />
         <input v-model="password" type="password" placeholder="パスワード" required class="input-field" />
         <p v-if="error" class="error-message">{{ error }}</p>
@@ -11,11 +12,12 @@
     <NuxtLink to="/signup" class="link-text">新規登録はこちら</NuxtLink>
     </div>
 </div>
+</NuxtLayout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter, useNuxtApp } from '#app' // useNuxtApp は #app からインポート
+import { useRouter, useNuxtApp, navigateTo } from '#app' 
 
 // definePageMeta は必ず一番上に来るようにする
 definePageMeta({
@@ -27,8 +29,8 @@ const router = useRouter()
 
 const email = ref('')
 const password = ref('')
-// 💡 修正: 変数名を 'error' に統一
-const error = ref(null) 
+// 💡 修正済み: 変数名を 'error' に統一
+const error = ref(null)
 
 const loginUser = async () => {
   const store = nuxtApp.vueApp.config.globalProperties.$store
@@ -42,18 +44,16 @@ const loginUser = async () => {
   error.value = null
 
   try {
-    // 💡 修正: Vuex アクション名を 'loginAction' に修正
+    // 💡 修正済み: Vuex アクション名を 'loginAction' に修正
     await store.dispatch('auth/loginAction', { 
         email: email.value, 
         password: password.value,
     })
     
     // ログイン成功後、ホーム画面へリダイレクト
-    // router.push('/') の代わりに navigateTo('/') が Nuxtでは推奨
     await navigateTo('/') 
 
   } catch (e) {
-    // Firebaseからのエラーメッセージを捕捉
     error.value = 'ログインに失敗しました: ' + (e.message || '不明なエラー')
     console.error('ログインエラー:', e)
   }
@@ -61,14 +61,11 @@ const loginUser = async () => {
 </script>
 
 <style scoped>
-/* スタイルは変更なし */
-/* ... */
 .form-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding-top: 80px;
 }
 .auth-box {
     background: white;

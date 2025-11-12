@@ -1,0 +1,41 @@
+/* assets/css/main.css */
+
+body {
+    background-color: #1a1a2e;
+    color: #e4e4e4;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* 共通のリンクスタイル */
+a {
+    color: #6a40e7;
+    text-decoration: none;
+}
+
+/* UIパーツの共通カラー */
+.sidebar-link,
+.post-item,
+.comment-box {
+    color: #e4e4e4;
+    border-color: #33334d;
+}
+
+/* ボタンのスタイル */
+.share-button,
+.comment-button {
+    background-color: #6a40e7;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-weight: bold;
+}
+
+.share-button:hover,
+.comment-button:hover {
+    background-color: #5b34d9;
+}

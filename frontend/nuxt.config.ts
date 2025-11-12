@@ -1,4 +1,4 @@
-// 💡 修正 1: defineNuxtConfig は 'nuxt/config' からインポートします
+
 import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
@@ -27,5 +27,10 @@ export default defineNuxtConfig({
   devServer: {
     host: '0.0.0.0',
     port: 3000,
-  }
+  },
+
+  css: [
+    '~/assets/css/main.css', // 💡 グローバルCSSのパスを設定
+  ],
+
 })

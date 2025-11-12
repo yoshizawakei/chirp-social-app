@@ -25,21 +25,22 @@
             required
             class="input-field"
           />
+          <p v-if="error" class="error-message">{{ error }}</p>
           <button type="submit" class="auth-button">新規登録</button>
         </form>
+        <NuxtLink to="/login" class="link-text">ログインはこちら</NuxtLink>
       </div>
     </div>
   </NuxtLayout>
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { useRouter, useNuxtApp, navigateTo } from '#app' 
+
 definePageMeta({
   layout: 'auth', // 💡 作成済みの auth.vue レイアウトを適用
 })
-
-import { ref } from 'vue'
-import { useRouter } from '#app' 
-import { useNuxtApp } from '#app'
 
 const nuxtApp = useNuxtApp()
 const router = useRouter()
@@ -47,39 +48,40 @@ const router = useRouter()
 const name = ref('')
 const email = ref('')
 const password = ref('')
-const signupError = ref(null)
+// 💡 修正: 変数名を error に統一
+const error = ref(null)
 
 const registerUser = async () => {
   const store = nuxtApp.vueApp.config.globalProperties.$store
   
   if (!store) {
-    signupError.value = 'アプリケーションの初期化に失敗しました。'
+    error.value = 'アプリケーションの初期化に失敗しました。'
     console.error('Vuex store is not initialized.')
     return
   }
 
-  signupError.value = null
+  error.value = null
 
   try {
-    // 💡 修正: $auth を渡さずにディスパッチ
-    await store.dispatch('auth/registerUser', { 
+    // 💡 修正: Vuex アクション名を 'signUpAction' に修正
+    await store.dispatch('auth/signUpAction', { 
         email: email.value, 
         password: password.value,
         name: name.value
     })
     
     // 登録成功後、ログイン画面へリダイレクト
-    router.push('/login') 
+    await navigateTo('/login') 
 
-  } catch (error) {
-    signupError.value = 'ユーザー登録エラー: ' + error.message
-    console.error('ユーザー登録エラー:', error)
+  } catch (e) {
+    error.value = 'ユーザー登録に失敗しました: ' + e.message
+    console.error('ユーザー登録エラー:', e)
   }
 }
 </script>
 
-<style>
-/* 共通スタイルはlogin.vueのものを参照 */
+<style scoped>
+/* スタイルは全て含める必要があります */
 .form-container {
   display: flex;
   justify-content: center;
@@ -125,5 +127,20 @@ h2 {
 }
 .auth-button:hover {
   background-color: #5b34d9;
+}
+.error-message {
+    color: #e74c3c;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    text-align: left;
+    padding-left: 5px;
+}
+.link-text {
+    color: #6a40e7;
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: 10px;
+    display: inline-block;
 }
 </style>

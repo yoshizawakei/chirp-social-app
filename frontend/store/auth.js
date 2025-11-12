@@ -1,23 +1,21 @@
-// 💡 frontend/store/auth.js
-// Firebase関連のインポート (お使いのインポートを維持)
-import { 
-    getAuth, 
-    createUserWithEmailAndPassword, 
-    signInWithEmailAndPassword, 
-    onAuthStateChanged, 
-    signOut 
-} from 'firebase/auth' 
-import { initializeApp } from 'firebase/app' 
-// import router from 'vue-router' // Nuxtでは use/navigateTo を使うため、これは不要
+// frontend/store/auth.js
 
-// 💡 Vuexモジュールをデフォルトエクスポートとして定義
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut
+} from 'firebase/auth'
+
+
+import { useNuxtApp } from '#app';
+
 export default {
-    // 💡 名前空間を有効にする
-    namespaced: true, 
+    namespaced: true,
 
     state: () => ({
         user: null,
-        authChecked: false, // 認証チェックが完了したかを示すフラグ
+        authChecked: false,
     }),
 
     mutations: {
@@ -30,18 +28,25 @@ export default {
     },
 
     actions: {
-        // 認証状態の変更監視 (アプリ起動時に呼び出される)
         onAuthStateChangedAction({ commit }) {
             return new Promise((resolve) => {
                 if (process.client) {
                     try {
-                        const auth = getAuth()
-                        
-                        onAuthStateChanged(auth, user => { 
-                            // ユーザーがログイン状態の場合
+                        const { $auth } = useNuxtApp();
+
+                        if (!$auth) {
+                            throw new Error("Firebase Auth is not initialized.");
+                        }
+
+                        onAuthStateChanged($auth, user => {
                             commit('setUser', user)
-                            commit('setAuthChecked', true)
-                            resolve(user)
+
+                            console.log("AUTH_STATE_CHANGE: Firebase reports user:", user ? user.uid : 'null/undefined');
+
+                            if (!this.state.auth.authChecked) {
+                                commit('setAuthChecked', true)
+                                resolve(user)
+                            }
                         })
                     } catch (e) {
                         console.error("Firebase Auth 初期化エラー:", e);
@@ -49,39 +54,54 @@ export default {
                         resolve(null);
                     }
                 } else {
-                    // サーバーサイドではすぐに解決
                     commit('setAuthChecked', true)
                     resolve(null)
                 }
             })
         },
-        
-        // ユーザー登録
-        async signUpAction({ dispatch }, { email, password }) {
-            const auth = getAuth()
-            await createUserWithEmailAndPassword(auth, email, password)
-            // 登録後、認証状態の更新を待つ
-            await dispatch('onAuthStateChangedAction') 
+
+        async signUpAction({ commit }, { email, password }) {
+            const { $auth } = useNuxtApp();
+
+            if (!$auth) throw new Error("認証サービスが利用できません。");
+
+            const userCredential = await createUserWithEmailAndPassword($auth, email, password)
+            commit('setUser', userCredential.user)
         },
 
-        // ログイン
-        async loginAction({ dispatch }, { email, password }) {
-            const auth = getAuth()
-            await signInWithEmailAndPassword(auth, email, password)
-            await dispatch('onAuthStateChangedAction') 
+        async loginAction({ commit }, { email, password }) {
+            const { $auth } = useNuxtApp();
+
+            if (!$auth) throw new Error("認証サービスが利用できません。");
+
+            try {
+                const userCredential = await signInWithEmailAndPassword($auth, email, password);
+                commit('setUser', userCredential.user);
+
+                // 💡 追記: ログイン成功時のユーザー情報をログに出力
+                console.log("LOGIN_SUCCESS: User committed to store:", userCredential.user.uid);
+
+            } catch (error) {
+                // 💡 追記: ログイン失敗時のエラーをログに出力
+                console.error("LOGIN_FAILED:", error.message);
+                throw error;
+            }
         },
 
-        // ログアウト
         async logoutAction({ commit }) {
-            const auth = getAuth()
-            await signOut(auth)
-            // ログアウト後、ユーザー情報をクリア
-            commit('setUser', null) 
-            // 💡 ログアウト後のリダイレクトはコンポーネント側で行うのがベスト
+            const { $auth } = useNuxtApp();
+
+            if (!$auth) return;
+
+            await signOut($auth)
+            commit('setUser', null)
         }
     },
 
     getters: {
-        isLoggedIn: (state) => !!state.user
+        user: (state) => state.user,
+        isLoggedIn: (state) => !!state.user,
+
+        isAuthChecked: (state) => state.authChecked
     }
 }
