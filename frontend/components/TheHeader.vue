@@ -1,3 +1,4 @@
+<!-- frontend/components/TheHeader.vue -->
 <template>
   <header class="header">
     <nav>

@@ -1,5 +1,4 @@
 // plugins/vuex.js
-
 import { createStore } from 'vuex'
 import authModule from '~/store/auth'
 import postsModule from '~/store/posts'

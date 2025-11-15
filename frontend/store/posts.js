@@ -1,3 +1,4 @@
+// frontend/store/posts.js
 import { useNuxtApp } from '#app';
 import {
     collection,
@@ -18,9 +19,6 @@ import {
 export default {
     namespaced: true,
 
-    // ----------------------
-    //  State
-    // ----------------------
     state: () => ({
         posts: [],
         userPosts: [],
@@ -28,9 +26,6 @@ export default {
         comments: [],
     }),
 
-    // ----------------------
-    //  Mutations
-    // ----------------------
     mutations: {
         setPosts(state, posts) { state.posts = posts; },
         setUserPosts(state, posts) { state.userPosts = posts; },
@@ -38,9 +33,6 @@ export default {
         setComments(state, comments) { state.comments = comments; },
     },
 
-    // ----------------------
-    //  Getters
-    // ----------------------
     getters: {
         allPosts: (state) => state.posts,
         userPosts: (state) => state.userPosts,
@@ -48,14 +40,8 @@ export default {
         comments: (state) => state.comments,
     },
 
-    // ----------------------
-    //  Actions
-    // ----------------------
     actions: {
-
-        // =====================
         // ホーム投稿一覧
-        // =====================
         fetchPostsAction({ commit }) {
             const { $firestore } = useNuxtApp();
             if (!$firestore) return () => {};
@@ -66,14 +52,21 @@ export default {
             );
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
-                const posts = snapshot.docs.map(doc => {
-                    const data = doc.data();
+                const posts = snapshot.docs.map(docSnap => {
+                    const data = docSnap.data();
                     const likes = data.likes || [];
+
+                    let createdAt = data.createdAt ?? null;
+                    if (!createdAt) {
+                        createdAt = new Date(); // 🔥 null のままにしない
+                    }
+
                     return {
-                        id: doc.id,
+                        id: docSnap.id,
                         ...data,
                         likes,
                         likeCount: likes.length,
+                        createdAt,
                     };
                 });
 
@@ -83,23 +76,28 @@ export default {
             return unsubscribe;
         },
 
-        // =====================
         // 新規投稿
-        // =====================
-        async addPostAction({ rootGetters }, message) {
+        async addPostAction({ rootGetters }, payload) {
             const { $firestore } = useNuxtApp();
-
             const user = rootGetters["auth/user"];
             if (!user) throw new Error("ログインが必要です。");
 
-            if (!message || message.trim() === "") {
+            const rawMessage = payload?.message;
+            const message = typeof rawMessage === "string"
+                ? rawMessage.trim()
+                : String(rawMessage || "").trim();
+
+            if (!message) {
                 throw new Error("投稿内容を入力してください。");
             }
 
+            const userId = payload.userId || user.uid;
+            const userEmail = payload.userEmail || user.email;
+
             const newPost = {
-                userId: user.uid,
-                username: user.email.split("@")[0],
-                email: user.email,
+                userId,
+                username: userEmail.split("@")[0],
+                email: userEmail,
                 message,
                 createdAt: serverTimestamp(),
                 likes: [],
@@ -108,12 +106,9 @@ export default {
             await addDoc(collection($firestore, "posts"), newPost);
         },
 
-        // =====================
         // 投稿削除
-        // =====================
         async deletePostAction({ rootGetters }, postId) {
             const { $firestore } = useNuxtApp();
-
             const user = rootGetters["auth/user"];
             if (!user) throw new Error("ログインが必要です。");
 
@@ -128,12 +123,9 @@ export default {
             await deleteDoc(ref);
         },
 
-        // =====================
-        // いいね機能
-        // =====================
+        // いいね
         async likePostAction({ rootGetters }, postId) {
             const { $firestore } = useNuxtApp();
-
             const user = rootGetters["auth/user"];
             if (!user) throw new Error("ログインが必要です。");
 
@@ -153,12 +145,9 @@ export default {
             await batch.commit();
         },
 
-        // =====================
         // プロフィール内の投稿一覧
-        // =====================
         fetchUserPostsAction({ commit, rootGetters }) {
             const { $firestore } = useNuxtApp();
-
             const user = rootGetters["auth/user"];
             if (!user) return () => {};
 
@@ -169,14 +158,19 @@ export default {
             );
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
-                const posts = snapshot.docs.map(doc => {
-                    const data = doc.data();
+                const posts = snapshot.docs.map(docSnap => {
+                    const data = docSnap.data();
                     const likes = data.likes || [];
+
+                    let createdAt = data.createdAt ?? null;
+                    if (!createdAt) createdAt = new Date();
+
                     return {
-                        id: doc.id,
+                        id: docSnap.id,
                         ...data,
                         likes,
                         likeCount: likes.length,
+                        createdAt,
                     };
                 });
 
@@ -186,9 +180,7 @@ export default {
             return unsubscribe;
         },
 
-        // =====================
         // 投稿詳細
-        // =====================
         fetchPostDetailAction({ commit }, postId) {
             const { $firestore } = useNuxtApp();
             if (!postId) return () => {};
@@ -204,20 +196,22 @@ export default {
                 const data = snap.data();
                 const likes = data.likes || [];
 
+                let createdAt = data.createdAt ?? null;
+                if (!createdAt) createdAt = new Date();
+
                 commit("setPostDetail", {
                     id: snap.id,
                     ...data,
                     likes,
                     likeCount: likes.length,
+                    createdAt,
                 });
             });
 
             return unsubscribe;
         },
 
-        // =====================
         // コメント一覧
-        // =====================
         fetchCommentsAction({ commit }, postId) {
             const { $firestore } = useNuxtApp();
             if (!postId) return () => {};
@@ -233,31 +227,26 @@ export default {
                     id: doc.id,
                     ...doc.data(),
                 }));
-
                 commit("setComments", comments);
             });
 
             return unsubscribe;
         },
 
-        // =====================
         // コメント投稿
-        // =====================
         async addCommentAction({ rootGetters }, { postId, text }) {
             const { $firestore } = useNuxtApp();
-
             const user = rootGetters["auth/user"];
             if (!user) throw new Error("ログインが必要です。");
 
-            if (!text || text.trim() === "") {
-                throw new Error("コメントを入力してください。");
-            }
+            const msg = typeof text === "string" ? text.trim() : "";
+            if (!msg) throw new Error("コメントを入力してください。");
 
             const newComment = {
                 postId,
                 userId: user.uid,
                 username: user.email.split("@")[0],
-                text,
+                text: msg,
                 createdAt: serverTimestamp()
             };
 

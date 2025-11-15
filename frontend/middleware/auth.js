@@ -1,5 +1,4 @@
 // middleware/auth.js
-
 export default defineNuxtRouteMiddleware(async (to, from) => {
     if (to.path === '/login' || to.path === '/signup') {
         return;

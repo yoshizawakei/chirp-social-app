@@ -1,3 +1,4 @@
+<!-- frontend/pages/index.vue -->
 <template>
     <div class="page-content">
         <h2 class="page-title">ホーム</h2>
@@ -13,34 +14,34 @@
                     <span class="timestamp">{{ formatTime(post.createdAt) }}</span>
                 </div>
                 <p class="post-message">{{ post.message }}</p>
-                
+
                 <div class="post-actions">
                     <button class="action-btn" @click="goToDetail(post.id)">
                         <img :src="detailIcon" alt="コメント" class="action-icon icon-detail-img" />
                     </button>
-                    
-                    <button 
-                        class="action-btn" 
+
+                    <button
+                        class="action-btn"
                         @click="likePost(post.id)"
                         :class="{ 'liked': post.likes.includes(currentUserId) }"
                     >
-                        <img 
-                            :src="heartIcon" 
-                            alt="いいね" 
-                            class="action-icon icon-heart-img" 
+                        <img
+                            :src="heartIcon"
+                            alt="いいね"
+                            class="action-icon icon-heart-img"
                         />
                         <span class="like-count">{{ post.likeCount || 0 }}</span>
                     </button>
 
-                    <button 
-                        v-if="isPostOwner(post.userId)" 
-                        class="action-btn delete-btn" 
+                    <button
+                        v-if="isPostOwner(post.userId)"
+                        class="action-btn delete-btn"
                         @click="deletePost(post.id)"
                     >
-                        <img 
-                            :src="crossIcon" 
-                            alt="削除" 
-                            class="action-icon icon-cross-img" 
+                        <img
+                            :src="crossIcon"
+                            alt="削除"
+                            class="action-icon icon-cross-img"
                         />
                     </button>
                 </div>
@@ -56,13 +57,11 @@
 import { computed, onMounted, onUnmounted } from 'vue';
 import { useNuxtApp, navigateTo } from '#app';
 
-definePageMeta({
-    middleware: 'auth'
-})
+definePageMeta({ middleware: 'auth' });
 
 import heartIcon from '~/assets/images/heart.png';
 import crossIcon from '~/assets/images/cross.png';
-import detailIcon from '~/assets/images/detail.png'; // コメント/詳細アイコン
+import detailIcon from '~/assets/images/detail.png';
 
 const nuxtApp = useNuxtApp();
 const store = nuxtApp.vueApp.config.globalProperties.$store;
@@ -73,35 +72,46 @@ const currentUserId = computed(() => store.getters['auth/user']?.uid);
 let unsubscribeListener = null;
 
 onMounted(async () => {
-    // 💡 修正: onMountedをasyncにし、awaitでunsubscribe関数を確実に取得
     try {
         unsubscribeListener = await store.dispatch('posts/fetchPostsAction');
     } catch (e) {
-        console.error("Failed to set up post listener:", e);
+        console.error('Failed to set up post listener:', e);
     }
 });
 
 onUnmounted(() => {
-    if (unsubscribeListener) {
-        unsubscribeListener();
-    }
+    if (unsubscribeListener) unsubscribeListener();
 });
 
-const formatTime = (timestamp) => {
-    // ... (タイムスタンプ整形ロジックはlayouts/default.vueと同様)
-    if (!timestamp) return 'ロード中...';
-    if (timestamp.toDate) {
-        return timestamp.toDate().toLocaleString('ja-JP', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit'
+const formatTime = (ts) => {
+    if (!ts) return '日時不明';
+
+    try {
+        let date;
+
+        if (ts.toDate) {
+        date = ts.toDate();          // Firestore Timestamp
+        } else if (ts instanceof Date) {
+        date = ts;                   // JS Date
+        } else if (typeof ts === 'number') {
+        date = new Date(ts);         // UNIX time
+        } else {
+        return '日時不明';
+        }
+
+        return date.toLocaleString('ja-JP', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
         });
+    } catch (e) {
+        return '日時不明';
     }
-    return '日付不明';
 };
 
-const isPostOwner = (postUserId) => {
-    return postUserId === currentUserId.value;
-};
+const isPostOwner = (postUserId) => postUserId === currentUserId.value;
 
 const likePost = async (postId) => {
     await store.dispatch('posts/likePostAction', postId);
@@ -118,8 +128,8 @@ const goToDetail = (postId) => {
 };
 </script>
 
+
 <style scoped>
-/* 💡 Twitter風UIのスタイル */
 .page-content {
     min-height: 100vh;
 }
@@ -195,10 +205,10 @@ const goToDetail = (postId) => {
     width: 20px;
     height: 20px;
     margin-right: 5px;
-    filter: invert(50%) sepia(10%) saturate(100%) hue-rotate(180deg) brightness(100%) contrast(80%); /* アイコンを灰色に */
+    filter: invert(50%) sepia(10%) saturate(100%) hue-rotate(180deg) brightness(100%) contrast(80%);
 }
 .action-btn.liked .icon-heart-img {
-    filter: none; /* いいね済みは元の色（赤） */
+    filter: none;
 }
 .like-count {
     font-size: 13px;

@@ -1,5 +1,4 @@
 // frontend/store/auth.js
-
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,

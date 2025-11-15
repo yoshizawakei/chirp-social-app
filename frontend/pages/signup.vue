@@ -1,3 +1,4 @@
+<!-- frontend/pages/signup.vue -->
 <template>
   <NuxtLayout name="auth">
     <div class="form-container">

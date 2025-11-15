@@ -1,3 +1,4 @@
+<!-- frontend/pages/profile.vue -->
 <template>
   <!-- <NuxtLayout name="default"> -->
     <h2>プロフィール画面</h2>

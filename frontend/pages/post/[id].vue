@@ -1,63 +1,65 @@
+<!-- frontend/pages/post/[id].vue -->
 <template>
     <div class="page-content">
         <h2 class="page-title">投稿詳細</h2>
 
         <div v-if="postDetail" class="post-detail-container">
-            <div class="post-item original-post">
-                <div class="post-header">
-                    <span class="post-username">@{{ postDetail.username || '名無し' }}</span>
-                    <span class="timestamp">{{ formatTime(postDetail.createdAt) }}</span>
-                </div>
-                <p class="post-message">{{ postDetail.message }}</p>
+        <div class="post-item original-post">
+            <div class="post-header">
+            <span class="post-username">@{{ postDetail.username || "名無し" }}</span>
+            <span class="timestamp">{{ formatTime(postDetail.createdAt) }}</span>
+            </div>
+            <p class="post-message">{{ postDetail.message }}</p>
+        </div>
+
+        <div class="comment-input-area">
+            <textarea
+            v-model="newComment"
+            placeholder="コメントを入力... (120文字以内)"
+            class="comment-input"
+            :disabled="isPostingComment"
+            maxlength="120"
+            ></textarea>
+            <button
+            class="comment-button"
+            @click="postComment"
+            :disabled="!newComment.trim() || isPostingComment || newComment.length > 120"
+            >
+            {{ isPostingComment ? "投稿中..." : "コメント" }}
+            </button>
+        </div>
+
+        <div class="comment-list">
+            <div v-if="comments.length === 0" class="no-comments">
+            まだコメントがありません。
             </div>
 
-            <div class="comment-input-area">
-                <textarea
-                    v-model="newComment"
-                    placeholder="コメントを入力... (120文字以内)"
-                    class="comment-input"
-                    :disabled="isPostingComment"
-                    maxlength="120"
-                ></textarea>
-                <button 
-                    class="comment-button" 
-                    @click="postComment"
-                    :disabled="!newComment.trim() || isPostingComment || newComment.length > 120"
-                >
-                    {{ isPostingComment ? '投稿中...' : 'コメント' }}
-                </button>
+            <div
+            v-for="comment in comments"
+            :key="comment.id"
+            class="comment-item"
+            >
+            <div class="comment-header">
+                <span class="comment-username">@{{ comment.username }}</span>
+                <span class="timestamp">{{ formatTime(comment.createdAt) }}</span>
             </div>
-
-            <div class="comment-list">
-                <div v-if="comments.length === 0" class="no-comments">
-                    まだコメントがありません。
-                </div>
-                <div 
-                    v-for="comment in comments"
-                    :key="comment.id"
-                    class="comment-item"
-                >
-                    <div class="comment-header">
-                        <span class="comment-username">@{{ comment.username }}</span>
-                        <span class="timestamp">{{ formatTime(comment.createdAt) }}</span>
-                    </div>
-                    <p class="comment-message">{{ comment.text }}</p>
-                </div>
+            <p class="comment-message">{{ comment.text }}</p>
             </div>
+        </div>
         </div>
 
         <div v-else class="loading-message">
-            {{ postDetail === null ? '投稿が見つかりません。' : '投稿を読み込み中...' }}
+        {{ postDetail === null ? "投稿が見つかりません。" : "投稿を読み込み中..." }}
         </div>
     </div>
-</template>
+    </template>
 
-<script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRoute, useNuxtApp } from '#app'; 
+    <script setup>
+    import { ref, computed, onMounted, onUnmounted } from "vue";
+    import { useRoute, useNuxtApp } from "#app";
 
-definePageMeta({
-    middleware: 'auth'
+    definePageMeta({
+    middleware: "auth",
 });
 
 const nuxtApp = useNuxtApp();
@@ -65,66 +67,85 @@ const store = nuxtApp.vueApp.config.globalProperties.$store;
 const route = useRoute();
 
 const postId = route.params.id;
-const newComment = ref('');
+const newComment = ref("");
 const isPostingComment = ref(false);
 
-const postDetail = computed(() => store.getters['posts/postDetail']);
-const comments = computed(() => store.getters['posts/comments'] || []);
+const postDetail = computed(() => store.getters["posts/postDetail"]);
+const comments = computed(() => store.getters["posts/comments"] || []);
 
 let unsubscribePostDetail = null;
 let unsubscribeComments = null;
 
 onMounted(() => {
     if (postId) {
-        // 投稿詳細とコメントのリアルタイムリスナーをセットアップ
-        unsubscribePostDetail = store.dispatch('posts/fetchPostDetailAction', postId);
-        unsubscribeComments = store.dispatch('posts/fetchCommentsAction', postId);
+        unsubscribePostDetail = store.dispatch(
+        "posts/fetchPostDetailAction",
+        postId
+        );
+        unsubscribeComments = store.dispatch("posts/fetchCommentsAction", postId);
     }
 });
 
 onUnmounted(() => {
     if (unsubscribePostDetail) unsubscribePostDetail();
     if (unsubscribeComments) unsubscribeComments();
-    store.commit('posts/setPostDetail', null); 
-    store.commit('posts/setComments', []); 
-});
+    store.commit("posts/setPostDetail", null);
+    store.commit("posts/setComments", []);
+    });
 
-const formatTime = (timestamp) => {
-    // ... (layouts/default.vueと同様のロジック)
-    if (!timestamp) return 'ロード中...';
-    if (timestamp.toDate) {
-        return timestamp.toDate().toLocaleString('ja-JP', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit'
+const formatTime = (ts) => {
+    if (!ts) return "日時不明";
+
+    try {
+        let date;
+
+        if (ts.toDate) {
+        date = ts.toDate();
+        } else if (ts instanceof Date) {
+        date = ts;
+        } else if (typeof ts === "number") {
+        date = new Date(ts);
+        } else {
+        return "日時不明";
+        }
+
+        return date.toLocaleString("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
         });
+    } catch {
+        return "日時不明";
     }
-    return '日付不明';
 };
 
 const postComment = async () => {
-    // 1. バリデーションチェック (入力必須, 120文字以内)
-    if (newComment.value.trim() === '' || newComment.value.length > 120) {
-        alert('コメントを入力するか、文字数を調整してください (120文字以内)。');
+    const text = newComment.value.trim();
+
+    if (!text || text.length > 120) {
+        alert("コメントを入力するか、文字数を調整してください (120文字以内)。");
         return;
     }
 
     isPostingComment.value = true;
 
     try {
-        // コメント投稿ロジック
-        await store.dispatch('posts/addCommentAction', {
-            postId: postId,
-            text: newComment.value
+        await store.dispatch("posts/addCommentAction", {
+        postId,
+        text,
         });
-        newComment.value = '';
+        newComment.value = "";
     } catch (e) {
-        alert('コメントの投稿に失敗しました。再度ログインしてください。');
-        console.error('Comment Post Error:', e);
+        console.error("Comment Post Error:", e);
+        alert("コメントの投稿に失敗しました。再度ログインしてください。");
     } finally {
         isPostingComment.value = false;
     }
-}
+};
 </script>
+
 
 <style scoped>
 .page-content {
@@ -166,12 +187,9 @@ const postComment = async () => {
     margin-bottom: 10px;
     word-wrap: break-word;
 }
-
-/* コメント入力エリア */
 .comment-input-area {
     padding: 15px 20px;
     border-bottom: 1px solid #38444d;
-    position: relative;
 }
 .comment-input {
     width: 100%;
@@ -201,8 +219,6 @@ const postComment = async () => {
     background-color: #444;
     opacity: 0.5;
 }
-
-/* コメントリスト */
 .comment-list {
     clear: both;
     padding-top: 10px;
@@ -215,13 +231,8 @@ const postComment = async () => {
 .comment-item:hover {
     background-color: #1a2a3a;
 }
-.comment-list .comment-header {
-    margin-bottom: 5px;
-}
-.comment-list .comment-message {
-    font-size: 15px;
-}
-.no-comments, .loading-message {
+.no-comments,
+.loading-message {
     padding: 30px 20px;
     color: #8899a6;
     text-align: center;

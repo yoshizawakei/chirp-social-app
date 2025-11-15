@@ -1,3 +1,4 @@
+<!-- frontend/components/TweetItem.vue -->
 <template>
   <div class="tweet-item">
     <div class="tweet-header">
@@ -32,64 +33,84 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { useNuxtApp } from "#app";
+
 const API_BASE_URL = 'http://localhost:8000/api';
 
-export default {
-  props: {
-    tweet: { type: Object, required: true, },
-    isDetail: { type: Boolean, default: false, }
-  },
-  computed: {
-    loggedInUserId() { return this.$store.getters['auth/userId']; }, 
-    isMyTweet() { return this.tweet.user_id === this.loggedInUserId },
-    isLiked() { return this.tweet.likes && this.tweet.likes.some(like => like.user_id === this.loggedInUserId); }
-  },
-  methods: {
-    goToDetail() { if (!this.isDetail) { this.$router.push(`/tweets/${this.tweet.id}`) } },
-    formatDate(dateString) { return new Date(dateString).toLocaleDateString() },
+const props = defineProps({
+  tweet: { type: Object, required: true },
+  isDetail: { type: Boolean, default: false }
+});
 
-    // 投稿の削除 (DELETE)
-    async deleteTweet() {
-      if (!this.isMyTweet || !confirm('この投稿を削除しますか？')) { return; }
+const emit = defineEmits(['tweet-deleted', 'like-toggled']);
 
-      try {
-        await $fetch(`/tweets/${this.tweet.id}`, {
-            method: 'DELETE',
-            baseURL: API_BASE_URL,
-        });
+const nuxtApp = useNuxtApp();
 
-        this.$emit('tweet-deleted');
-      } catch (e) {
-        console.error('投稿削除エラー:', e);
-        alert('投稿の削除に失敗しました。');
-      }
-    },
+const loggedInUserId = computed(() =>
+  nuxtApp.$store.getters['auth/userId']
+);
 
-    // いいねの追加・削除 (POST/DELETE)
-    async toggleLike() {
-        if (!this.loggedInUserId) { alert('いいねするにはログインが必要です。'); return; }
-        
-        try {
-            const method = this.isLiked ? 'DELETE' : 'POST';
-            const endpoint = `/tweets/${this.tweet.id}/like`;
-            
-            await $fetch(endpoint, {
-                method: method,
-                body: { user_id: this.loggedInUserId }, 
-                baseURL: API_BASE_URL,
-            });
-            
-            this.$emit('like-toggled');
-        } catch (e) {
-             console.error('いいね処理エラー:', e);
-             alert('いいね処理に失敗しました。');
-        }
-    },
-  },
-}
+const isMyTweet = computed(() =>
+  props.tweet.user_id === loggedInUserId.value
+);
+
+const isLiked = computed(() =>
+  props.tweet.likes?.some(like => like.user_id === loggedInUserId.value)
+);
+
+const goToDetail = () => {
+  if (!props.isDetail) {
+    navigateTo(`/tweets/${props.tweet.id}`);
+  }
+};
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString();
+};
+
+// 投稿の削除
+const deleteTweet = async () => {
+  if (!isMyTweet.value) return;
+  if (!confirm("この投稿を削除しますか？")) return;
+
+  try {
+    await nuxtApp.$fetch(`/tweets/${props.tweet.id}`, {
+      method: "DELETE",
+      baseURL: API_BASE_URL,
+    });
+
+    emit("tweet-deleted");
+  } catch (e) {
+    console.error("投稿削除エラー:", e);
+    alert("投稿の削除に失敗しました。");
+  }
+};
+
+// いいね追加・削除
+const toggleLike = async () => {
+  if (!loggedInUserId.value) {
+    alert("いいねするにはログインが必要です。");
+    return;
+  }
+
+  try {
+    const method = isLiked.value ? "DELETE" : "POST";
+
+    await nuxtApp.$fetch(`/tweets/${props.tweet.id}/like`, {
+      method,
+      baseURL: API_BASE_URL,
+      body: { user_id: loggedInUserId.value },
+    });
+
+    emit("like-toggled");
+  } catch (e) {
+    console.error("いいね処理エラー:", e);
+    alert("いいね処理に失敗しました。");
+  }
+};
 </script>
 
 <style scoped>
-/* スタイルは前回の提案を参照 */
+/* スタイル省略 */
 </style>

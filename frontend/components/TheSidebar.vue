@@ -1,3 +1,4 @@
+<!-- frontend/components/TheSidebar.vue -->
 <template>
 <nav class="sidebar">
     <NuxtLink to="/" class="sidebar-item" exact-active-class="active">
@@ -15,16 +16,16 @@
 <script>
 export default {
 methods: {
-async logout() {
-    if (!confirm('ログアウトしますか？')) return;
-    try {
-    // ストアのログアウトアクションを呼び出す
-    await this.$store.dispatch('auth/logout')
-    this.$router.push('/login')
-    } catch (e) {
-    alert('ログアウトに失敗しました。')
-    }
-},
+    async logout() {
+        if (!confirm('ログアウトしますか？')) return;
+        try {
+        // ストアのログアウトアクションを呼び出す
+        await this.$store.dispatch('auth/logoutAction')
+        this.$router.push('/login')
+        } catch (e) {
+        alert('ログアウトに失敗しました。')
+        }
+    },
 },
 }
 </script>

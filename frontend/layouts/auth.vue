@@ -1,3 +1,4 @@
+<!-- frontend/layouts/auth.vue -->
 <template>
     <div class="auth-layout">
     <header class="header">
@@ -16,10 +17,9 @@
 </template>
 
 <style scoped>
-/* 💡 背景色を画面画像の色に設定します */
 .auth-layout {
     min-height: 100vh;
-    background-color: #1e1e2d; /* 濃い紫/黒の背景色 */
+    background-color: #1e1e2d;
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -34,7 +34,6 @@
     right: 0;
     z-index: 10;
 }
-/* 💡 ロゴテキストのスタイル */
 .logo-text {
     font-size: 24px;
     font-weight: bold;
@@ -53,12 +52,10 @@
     opacity: 1;
     font-weight: bold;
 }
-
-/* 💡 メインコンテンツエリアのスタイル */
 .auth-content {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* 画面全体を使用 */
+    height: 100vh;
 }
 </style>
