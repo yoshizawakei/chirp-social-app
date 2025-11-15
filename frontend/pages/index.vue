@@ -1,96 +1,95 @@
 <template>
-    <!-- <NuxtLayout name="default"> -->
-        <div class="page-content">
-            <h2 class="page-title">ホーム</h2>
+    <div class="page-content">
+        <h2 class="page-title">ホーム</h2>
 
-            <div v-if="posts.length > 0">
-                <div
-                    v-for="post in posts"
-                    :key="post.id"
-                    class="post-item"
-                >
-                    <div class="post-header">
-                        <span class="post-username">@{{ post.username || post.email || '名無し' }}</span>
-                        <span class="post-actions">
-                            <span class="like-count">{{ post.likeCount || 0 }}</span>
-                            <img 
-                                :src="heartIcon" 
-                                alt="いいね" 
-                                class="action-icon icon-heart-img" 
-                                @click="likePost(post.id)" 
-                            />
+        <div v-if="posts.length > 0" class="posts-container">
+            <div
+                v-for="post in posts"
+                :key="post.id"
+                class="post-item"
+            >
+                <div class="post-header">
+                    <span class="post-username">@{{ post.username || '名無し' }}</span>
+                    <span class="timestamp">{{ formatTime(post.createdAt) }}</span>
+                </div>
+                <p class="post-message">{{ post.message }}</p>
+                
+                <div class="post-actions">
+                    <button class="action-btn" @click="goToDetail(post.id)">
+                        <img :src="detailIcon" alt="コメント" class="action-icon icon-detail-img" />
+                    </button>
+                    
+                    <button 
+                        class="action-btn" 
+                        @click="likePost(post.id)"
+                        :class="{ 'liked': post.likes.includes(currentUserId) }"
+                    >
+                        <img 
+                            :src="heartIcon" 
+                            alt="いいね" 
+                            class="action-icon icon-heart-img" 
+                        />
+                        <span class="like-count">{{ post.likeCount || 0 }}</span>
+                    </button>
 
-                            <img 
-                                :src="detailIcon" 
-                                alt="詳細" 
-                                class="action-icon icon-detail-img" 
-                                @click="goToDetail(post.id)"
-                            />
-                            <img 
-                                v-if="isPostOwner(post.userId)" 
-                                :src="crossIcon" 
-                                alt="削除" 
-                                class="action-icon icon-cross-img" 
-                                @click="deletePost(post.id)" 
-                            />
-                        </span>
-                    </div>
-                    <p class="post-message">{{ post.message }}</p>
-                    <div class="post-footer">
-                        <span class="timestamp">
-                            {{ formatTime(post.createdAt) }}
-                        </span>
-                        <NuxtLink :to="`/post/${post.id}`" class="comment-link">コメントを見る</NuxtLink>
-                    </div>
+                    <button 
+                        v-if="isPostOwner(post.userId)" 
+                        class="action-btn delete-btn" 
+                        @click="deletePost(post.id)"
+                    >
+                        <img 
+                            :src="crossIcon" 
+                            alt="削除" 
+                            class="action-icon icon-cross-img" 
+                        />
+                    </button>
                 </div>
             </div>
-            <div v-else class="empty-message">
-                投稿はまだありません。サイドバーから最初の投稿をシェアしましょう！
-            </div>
         </div>
-    <!-- </NuxtLayout> -->
+        <div v-else class="empty-message">
+            投稿はまだありません。サイドバーから最初の投稿をシェアしましょう！
+        </div>
+    </div>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted } from 'vue';
-import { useNuxtApp, navigateTo } from '#app'; // navigateTo をインポート
+import { useNuxtApp, navigateTo } from '#app';
 
 definePageMeta({
     middleware: 'auth'
 })
 
-// 💡 画像ファイルのインポート
 import heartIcon from '~/assets/images/heart.png';
 import crossIcon from '~/assets/images/cross.png';
-import detailIcon from '~/assets/images/detail.png';
+import detailIcon from '~/assets/images/detail.png'; // コメント/詳細アイコン
 
 const nuxtApp = useNuxtApp();
 const store = nuxtApp.vueApp.config.globalProperties.$store;
 
-// 投稿一覧を取得 (TypeError 対策として || [] を適用済み)
-const posts = computed(() => {
-    return store.getters['posts/allPosts'] || [];
-});
+const posts = computed(() => store.getters['posts/allPosts'] || []);
+const currentUserId = computed(() => store.getters['auth/user']?.uid);
 
 let unsubscribeListener = null;
 
-// リアルタイムリスナーセットアップ
-onMounted(() => {
-    // onMounted は非同期関数を直接返せないため、戻り値を受け取る
-    unsubscribeListener = store.dispatch('posts/fetchPostsAction');
+onMounted(async () => {
+    // 💡 修正: onMountedをasyncにし、awaitでunsubscribe関数を確実に取得
+    try {
+        unsubscribeListener = await store.dispatch('posts/fetchPostsAction');
+    } catch (e) {
+        console.error("Failed to set up post listener:", e);
+    }
 });
 
-// コンポーネント破棄時にリスナーを解除
 onUnmounted(() => {
     if (unsubscribeListener) {
         unsubscribeListener();
     }
 });
 
-// タイムスタンプの表示を整形
 const formatTime = (timestamp) => {
+    // ... (タイムスタンプ整形ロジックはlayouts/default.vueと同様)
     if (!timestamp) return 'ロード中...';
-    // Firebase Timestamp オブジェクトかどうかをチェック
     if (timestamp.toDate) {
         return timestamp.toDate().toLocaleString('ja-JP', {
             year: 'numeric', month: '2-digit', day: '2-digit',
@@ -100,133 +99,121 @@ const formatTime = (timestamp) => {
     return '日付不明';
 };
 
-// ログインユーザーのIDを取得 (認証ストアから取得を想定)
-const currentUserId = computed(() => store.getters['auth/user']?.uid);
-
-/**
- * 投稿者が現在のログインユーザーであるかチェック
- * @param {string} postUserId 投稿を作成したユーザーID
- * @returns {boolean}
- */
 const isPostOwner = (postUserId) => {
     return postUserId === currentUserId.value;
 };
 
-/**
- * 投稿にいいねを付けるアクションをディスパッチ
- * @param {string} postId 投稿ID
- */
 const likePost = async (postId) => {
-    try {
-        await store.dispatch('posts/likePostAction', postId);
-    } catch (e) {
-        alert('いいねに失敗しました。');
-        console.error('Like Post Error:', e);
-    }
+    await store.dispatch('posts/likePostAction', postId);
 };
 
-/**
- * 投稿を削除するアクションをディスパッチ
- * @param {string} postId 投稿ID
- */
 const deletePost = async (postId) => {
     if (confirm('本当にこの投稿を削除しますか？')) {
-        try {
-            await store.dispatch('posts/deletePostAction', postId);
-        } catch (e) {
-            alert('投稿の削除に失敗しました。');
-            console.error('Delete Post Error:', e);
-        }
+        await store.dispatch('posts/deletePostAction', postId);
     }
 };
 
-/**
- * 投稿詳細画面へ遷移
- * @param {string} postId 投稿ID
- */
 const goToDetail = (postId) => {
     navigateTo(`/post/${postId}`);
 };
-
 </script>
 
 <style scoped>
+/* 💡 Twitter風UIのスタイル */
 .page-content {
-    padding: 20px 0;
+    min-height: 100vh;
 }
-
 .page-title {
-    font-size: 28px;
+    font-size: 20px;
+    font-weight: bold;
     color: white;
-    margin-bottom: 30px;
-    border-bottom: 1px solid #33334d;
-    padding-bottom: 15px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #38444d;
     text-align: left;
+    position: sticky;
+    top: 0;
+    background-color: #15202b;
+    z-index: 5;
 }
-
-/* 投稿アイテムのスタイル */
 .post-item {
-    background-color: #24243e;
-    border: 1px solid #33334d;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 6px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #38444d;
     text-align: left;
+    transition: background-color 0.1s;
 }
-
+.post-item:hover {
+    background-color: #1a2a3a;
+}
 .post-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+    font-size: 15px;
 }
-
 .post-username {
     font-weight: bold;
     color: white;
-    font-size: 16px;
+    margin-right: 10px;
 }
-
-/* 💡 アクションアイコンのスタイル */
-.post-actions .action-icon {
-    width: 18px;
-    height: 18px;
-    margin-left: 15px;
-    cursor: pointer;
-    vertical-align: middle;
+.timestamp {
+    color: #8899a6;
+    font-size: 13px;
 }
-
 .post-message {
-    font-size: 14px;
-    color: #e4e4e4;
-    margin-top: 5px;
+    color: white;
+    font-size: 16px;
+    margin-bottom: 10px;
+    word-wrap: break-word;
 }
-
-.post-footer {
+.post-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    max-width: 400px;
     margin-top: 10px;
 }
-
-.timestamp {
-    font-size: 12px;
-    color: #aaa;
+.action-btn {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: #8899a6;
+    cursor: pointer;
+    padding: 5px 0;
+    transition: color 0.2s;
 }
-
-.comment-link {
-    color: #6a40e7;
+.action-btn:hover {
+    color: #1da1f2;
+}
+.action-btn.liked {
+    color: #e0245e; /* いいね済み */
+}
+.action-btn.liked:hover {
+    color: #e0245e;
+}
+.action-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    filter: invert(50%) sepia(10%) saturate(100%) hue-rotate(180deg) brightness(100%) contrast(80%); /* アイコンを灰色に */
+}
+.action-btn.liked .icon-heart-img {
+    filter: none; /* いいね済みは元の色（赤） */
+}
+.like-count {
     font-size: 13px;
-    display: inline-block;
+    margin-left: 2px;
 }
-
+.delete-btn {
+    color: #e74c3c;
+}
+.delete-btn:hover {
+    color: #c0392b;
+}
 .empty-message {
-    padding: 40px;
-    background-color: #24243e;
-    border: 1px dashed #33334d;
-    border-radius: 6px;
-    color: #aaa;
-    margin-top: 30px;
+    padding: 50px 20px;
+    color: #8899a6;
     text-align: center;
+    font-size: 16px;
 }
 </style>

@@ -1,172 +1,229 @@
 <template>
     <div class="page-content">
-        <h2 class="page-title">コメント</h2>
+        <h2 class="page-title">投稿詳細</h2>
 
-        <div class="post-item original-post">
-            <div class="post-header">
-                <span class="post-username">test</span>
-                <span class="post-actions">
-                    <img :src="heartIcon" alt="いいね" class="action-icon icon-heart-img" />
-                    <img :src="crossIcon" alt="削除" class="action-icon icon-cross-img" />
-                    <img :src="detailIcon" alt="シェア" class="action-icon icon-detail-img" />
-                </span>
-            </div>
-            <p class="post-message">test message</p>
-        </div>
-
-        <div class="comment-list">
-            <div class="comment-item">
-                <div class="comment-header">
-                    <span class="comment-username">test</span>
+        <div v-if="postDetail" class="post-detail-container">
+            <div class="post-item original-post">
+                <div class="post-header">
+                    <span class="post-username">@{{ postDetail.username || '名無し' }}</span>
+                    <span class="timestamp">{{ formatTime(postDetail.createdAt) }}</span>
                 </div>
-                <p class="comment-message">test comment</p>
+                <p class="post-message">{{ postDetail.message }}</p>
+            </div>
+
+            <div class="comment-input-area">
+                <textarea
+                    v-model="newComment"
+                    placeholder="コメントを入力... (120文字以内)"
+                    class="comment-input"
+                    :disabled="isPostingComment"
+                    maxlength="120"
+                ></textarea>
+                <button 
+                    class="comment-button" 
+                    @click="postComment"
+                    :disabled="!newComment.trim() || isPostingComment || newComment.length > 120"
+                >
+                    {{ isPostingComment ? '投稿中...' : 'コメント' }}
+                </button>
+            </div>
+
+            <div class="comment-list">
+                <div v-if="comments.length === 0" class="no-comments">
+                    まだコメントがありません。
+                </div>
+                <div 
+                    v-for="comment in comments"
+                    :key="comment.id"
+                    class="comment-item"
+                >
+                    <div class="comment-header">
+                        <span class="comment-username">@{{ comment.username }}</span>
+                        <span class="timestamp">{{ formatTime(comment.createdAt) }}</span>
+                    </div>
+                    <p class="comment-message">{{ comment.text }}</p>
+                </div>
             </div>
         </div>
 
-        <div class="comment-input-area">
-            <h3 class="comment-input-title">コメント</h3>
-            <textarea
-                v-model="newComment"
-                placeholder="コメントを入力..."
-                class="comment-input"
-            ></textarea>
-            <button class="comment-button" @click="postComment">コメント</button>
+        <div v-else class="loading-message">
+            {{ postDetail === null ? '投稿が見つかりません。' : '投稿を読み込み中...' }}
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute, useNuxtApp } from '#app'; 
 
 definePageMeta({
     middleware: 'auth'
 });
 
-// 💡 画像ファイルをすべてインポート
-import heartIcon from '~/assets/images/heart.png';
-import crossIcon from '~/assets/images/cross.png';
-import detailIcon from '~/assets/images/detail.png';
-
-const newComment = ref('');
+const nuxtApp = useNuxtApp();
+const store = nuxtApp.vueApp.config.globalProperties.$store;
 const route = useRoute();
-const postId = route.params.id;
 
-const postComment = () => {
-    if (newComment.value.trim() === '') {
-        alert('コメントを入力してください。');
+const postId = route.params.id;
+const newComment = ref('');
+const isPostingComment = ref(false);
+
+const postDetail = computed(() => store.getters['posts/postDetail']);
+const comments = computed(() => store.getters['posts/comments'] || []);
+
+let unsubscribePostDetail = null;
+let unsubscribeComments = null;
+
+onMounted(() => {
+    if (postId) {
+        // 投稿詳細とコメントのリアルタイムリスナーをセットアップ
+        unsubscribePostDetail = store.dispatch('posts/fetchPostDetailAction', postId);
+        unsubscribeComments = store.dispatch('posts/fetchCommentsAction', postId);
+    }
+});
+
+onUnmounted(() => {
+    if (unsubscribePostDetail) unsubscribePostDetail();
+    if (unsubscribeComments) unsubscribeComments();
+    store.commit('posts/setPostDetail', null); 
+    store.commit('posts/setComments', []); 
+});
+
+const formatTime = (timestamp) => {
+    // ... (layouts/default.vueと同様のロジック)
+    if (!timestamp) return 'ロード中...';
+    if (timestamp.toDate) {
+        return timestamp.toDate().toLocaleString('ja-JP', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+    return '日付不明';
+};
+
+const postComment = async () => {
+    // 1. バリデーションチェック (入力必須, 120文字以内)
+    if (newComment.value.trim() === '' || newComment.value.length > 120) {
+        alert('コメントを入力するか、文字数を調整してください (120文字以内)。');
         return;
     }
-    console.log(`投稿 ID: ${postId} にコメント: ${newComment.value}`);
-    alert(`コメントを投稿しました: ${newComment.value}`);
-    newComment.value = '';
+
+    isPostingComment.value = true;
+
+    try {
+        // コメント投稿ロジック
+        await store.dispatch('posts/addCommentAction', {
+            postId: postId,
+            text: newComment.value
+        });
+        newComment.value = '';
+    } catch (e) {
+        alert('コメントの投稿に失敗しました。再度ログインしてください。');
+        console.error('Comment Post Error:', e);
+    } finally {
+        isPostingComment.value = false;
+    }
 }
 </script>
 
 <style scoped>
 .page-content {
-    padding: 20px 0;
-    max-width: 800px;
+    padding: 0;
+    min-height: 100vh;
 }
-
 .page-title {
-    font-size: 28px;
+    font-size: 20px;
+    font-weight: bold;
     color: white;
-    margin-bottom: 30px;
-    border-bottom: 1px solid #33334d;
-    padding-bottom: 15px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #38444d;
     text-align: left;
+    background-color: #15202b;
 }
-
 .post-item {
-    background-color: #24243e;
-    border: 1px solid #33334d;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 6px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #38444d;
     text-align: left;
 }
-
 .post-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+    font-size: 15px;
 }
-
 .post-username {
     font-weight: bold;
     color: white;
-    font-size: 16px;
+    margin-right: 10px;
 }
-
-/* 💡 アクションアイコンのスタイル */
-.post-actions .action-icon {
-    width: 18px; 
-    height: 18px;
-    margin-left: 15px;
-    cursor: pointer;
-    vertical-align: middle;
-}
-
-.post-message {
-    font-size: 14px;
-    color: #e4e4e4;
-    margin-top: 5px;
-}
-
-/* コメントアイテムのスタイル */
-.comment-list {
-    margin-bottom: 30px;
-}
-.comment-item {
-    background-color: #1a1a2e; 
-    border-top: 1px solid #33334d;
-    padding: 15px 0;
-    text-align: left;
-}
-.comment-header {
-    margin-bottom: 5px;
-}
-.comment-username {
-    font-weight: bold;
-    color: white;
-    font-size: 14px;
-}
-.comment-message {
+.timestamp {
+    color: #8899a6;
     font-size: 13px;
-    color: #e4e4e4;
+}
+.post-message {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 10px;
+    word-wrap: break-word;
 }
 
-/* コメント入力エリアのスタイル */
+/* コメント入力エリア */
 .comment-input-area {
-    margin-top: 20px;
-    padding: 20px 0;
-    border-top: 1px solid #33334d;
+    padding: 15px 20px;
+    border-bottom: 1px solid #38444d;
     position: relative;
-    text-align: left;
-}
-.comment-input-title {
-    font-size: 18px;
-    color: white;
-    margin-bottom: 15px;
-    font-weight: 600;
 }
 .comment-input {
     width: 100%;
-    min-height: 80px;
-    background-color: #1a1a2e;
-    border: 1px solid #33334d;
-    color: #e4e4e4;
-    padding: 10px;
-    border-radius: 4px;
-    resize: vertical;
+    min-height: 50px;
+    background-color: #15202b;
+    border: none;
+    color: white;
+    padding: 10px 0;
+    resize: none;
     box-sizing: border-box;
-    margin-bottom: 10px;
+    font-size: 16px;
+    border-bottom: 1px solid #38444d;
 }
 .comment-button {
-    position: absolute;
-    bottom: 20px;
-    right: 0;
-    padding: 8px 20px;
+    float: right;
+    margin-top: 10px;
+    padding: 8px 15px;
+    background-color: #1da1f2;
+    color: white;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+}
+.comment-button:disabled {
+    background-color: #444;
+    opacity: 0.5;
+}
+
+/* コメントリスト */
+.comment-list {
+    clear: both;
+    padding-top: 10px;
+}
+.comment-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #38444d;
+    text-align: left;
+}
+.comment-item:hover {
+    background-color: #1a2a3a;
+}
+.comment-list .comment-header {
+    margin-bottom: 5px;
+}
+.comment-list .comment-message {
+    font-size: 15px;
+}
+.no-comments, .loading-message {
+    padding: 30px 20px;
+    color: #8899a6;
+    text-align: center;
 }
 </style>
