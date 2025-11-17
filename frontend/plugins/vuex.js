@@ -10,12 +10,20 @@ export default defineNuxtPlugin((nuxtApp) => {
             auth: authModule,
             posts: postsModule,
         },
-        strict: process.env.NODE_ENV !== 'production' 
+        strict: process.env.NODE_ENV !== 'production'
     })
 
     nuxtApp.vueApp.use(store)
     nuxtApp.vueApp.config.globalProperties.$store = store
-    
+
+    if (process.client && store._actions['auth/initAuth']) {
+        store.dispatch('auth/initAuth').catch((e) => {
+        console.error('initAuth failed:', e);
+        });
+    }
+
+    console.log('✅ Vuex store successfully registered with Nuxt app.');
+
     nuxtApp.hook('app:mounted', () => {
         if (process.client) {
             if (store._actions['auth/onAuthStateChangedAction']) {
@@ -28,7 +36,7 @@ export default defineNuxtPlugin((nuxtApp) => {
             }
         }
     })
-    
+
     console.log("✅ Vuex store successfully registered with Nuxt app.");
 
 })

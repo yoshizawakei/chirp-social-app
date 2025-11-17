@@ -1,20 +1,8 @@
 // frontend/store/posts.js
 import { useNuxtApp } from '#app';
-import {
-    collection,
-    onSnapshot,
-    query,
-    orderBy,
-    doc,
-    deleteDoc,
-    getDoc,
-    writeBatch,
-    addDoc,
-    serverTimestamp,
-    where,
-    arrayUnion,
-    arrayRemove
-} from 'firebase/firestore';
+import { $fetch } from 'ofetch';
+
+const API_BASE_URL = 'http://localhost/api'; // .env の API_URL と揃えてもOK
 
 export default {
     namespaced: true,
@@ -41,216 +29,125 @@ export default {
     },
 
     actions: {
-        // ホーム投稿一覧
-        fetchPostsAction({ commit }) {
-            const { $firestore } = useNuxtApp();
-            if (!$firestore) return () => {};
-
-            const q = query(
-                collection($firestore, 'posts'),
-                orderBy('createdAt', 'desc')
-            );
-
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                const posts = snapshot.docs.map(docSnap => {
-                    const data = docSnap.data();
-                    const likes = data.likes || [];
-
-                    let createdAt = data.createdAt ?? null;
-                    if (!createdAt) {
-                        createdAt = new Date(); // 🔥 null のままにしない
-                    }
-
-                    return {
-                        id: docSnap.id,
-                        ...data,
-                        likes,
-                        likeCount: likes.length,
-                        createdAt,
-                    };
-                });
-
-                commit("setPosts", posts);
-            });
-
-            return unsubscribe;
+        // =====================
+        // 投稿一覧（ホーム）
+        // =====================
+        async fetchPostsAction({ commit }) {
+            try {
+                const posts = await $fetch(`${API_BASE_URL}/posts`);
+                commit('setPosts', posts);
+            } catch (e) {
+                console.error('fetchPostsAction error:', e);
+            }
         },
 
-        // 新規投稿
-        async addPostAction({ rootGetters }, payload) {
-            const { $firestore } = useNuxtApp();
-            const user = rootGetters["auth/user"];
-            if (!user) throw new Error("ログインが必要です。");
+        // =====================
+        // 新規投稿（サイドバー）
+        // payload: { message, userId, userEmail }
+        // =====================
+        async addPostAction(_, payload) {
+            const { message, userId, userEmail } = payload || {};
 
-            const rawMessage = payload?.message;
-            const message = typeof rawMessage === "string"
-                ? rawMessage.trim()
-                : String(rawMessage || "").trim();
-
-            if (!message) {
-                throw new Error("投稿内容を入力してください。");
+            const text = (message || '').trim();
+            if (!text) {
+                throw new Error('投稿内容を入力してください。');
+            }
+            if (text.length > 120) {
+                throw new Error('投稿は120文字以内で入力してください。');
+            }
+            if (!userId || !userEmail) {
+                throw new Error('ユーザー情報が不足しています。');
             }
 
-            const userId = payload.userId || user.uid;
-            const userEmail = payload.userEmail || user.email;
+            const username = userEmail.split('@')[0];
 
-            const newPost = {
-                userId,
-                username: userEmail.split("@")[0],
-                email: userEmail,
-                message,
-                createdAt: serverTimestamp(),
-                likes: [],
-            };
-
-            await addDoc(collection($firestore, "posts"), newPost);
+            await $fetch(`${API_BASE_URL}/posts`, {
+                method: 'POST',
+                body: {
+                    userId,
+                    username,
+                    message: text,
+                },
+            });
         },
 
+        // =====================
         // 投稿削除
+        // =====================
         async deletePostAction({ rootGetters }, postId) {
-            const { $firestore } = useNuxtApp();
-            const user = rootGetters["auth/user"];
-            if (!user) throw new Error("ログインが必要です。");
+            const user = rootGetters['auth/user'];
+            if (!user) throw new Error('ログインが必要です。');
 
-            const ref = doc($firestore, "posts", postId);
-            const snap = await getDoc(ref);
-            if (!snap.exists()) throw new Error("投稿が存在しません。");
-
-            if (snap.data().userId !== user.uid) {
-                throw new Error("削除権限がありません。");
-            }
-
-            await deleteDoc(ref);
+            await $fetch(`${API_BASE_URL}/posts/${postId}`, {
+                method: 'DELETE',
+                body: {
+                    userId: user.uid,
+                },
+            });
         },
 
-        // いいね
+        // =====================
+        // いいねトグル
+        // =====================
         async likePostAction({ rootGetters }, postId) {
-            const { $firestore } = useNuxtApp();
-            const user = rootGetters["auth/user"];
-            if (!user) throw new Error("ログインが必要です。");
+            const user = rootGetters['auth/user'];
+            if (!user) throw new Error('ログインが必要です。');
 
-            const ref = doc($firestore, "posts", postId);
-            const snap = await getDoc(ref);
-            if (!snap.exists()) throw new Error("投稿が見つかりません。");
-
-            const likes = snap.data().likes || [];
-            const batch = writeBatch($firestore);
-
-            if (likes.includes(user.uid)) {
-                batch.update(ref, { likes: arrayRemove(user.uid) });
-            } else {
-                batch.update(ref, { likes: arrayUnion(user.uid) });
-            }
-
-            await batch.commit();
-        },
-
-        // プロフィール内の投稿一覧
-        fetchUserPostsAction({ commit, rootGetters }) {
-            const { $firestore } = useNuxtApp();
-            const user = rootGetters["auth/user"];
-            if (!user) return () => {};
-
-            const q = query(
-                collection($firestore, "posts"),
-                where("userId", "==", user.uid),
-                orderBy("createdAt", "desc")
-            );
-
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                const posts = snapshot.docs.map(docSnap => {
-                    const data = docSnap.data();
-                    const likes = data.likes || [];
-
-                    let createdAt = data.createdAt ?? null;
-                    if (!createdAt) createdAt = new Date();
-
-                    return {
-                        id: docSnap.id,
-                        ...data,
-                        likes,
-                        likeCount: likes.length,
-                        createdAt,
-                    };
-                });
-
-                commit("setUserPosts", posts);
+            await $fetch(`${API_BASE_URL}/posts/${postId}/like`, {
+                method: 'POST',
+                body: {
+                    userId: user.uid,
+                },
             });
-
-            return unsubscribe;
         },
 
+        // =====================
         // 投稿詳細
-        fetchPostDetailAction({ commit }, postId) {
-            const { $firestore } = useNuxtApp();
-            if (!postId) return () => {};
-
-            const ref = doc($firestore, "posts", postId);
-
-            const unsubscribe = onSnapshot(ref, (snap) => {
-                if (!snap.exists()) {
-                    commit("setPostDetail", null);
-                    return;
-                }
-
-                const data = snap.data();
-                const likes = data.likes || [];
-
-                let createdAt = data.createdAt ?? null;
-                if (!createdAt) createdAt = new Date();
-
-                commit("setPostDetail", {
-                    id: snap.id,
-                    ...data,
-                    likes,
-                    likeCount: likes.length,
-                    createdAt,
-                });
-            });
-
-            return unsubscribe;
+        // =====================
+        async fetchPostDetailAction({ commit }, postId) {
+            try {
+                const post = await $fetch(`${API_BASE_URL}/posts/${postId}`);
+                commit('setPostDetail', post);
+            } catch (e) {
+                console.error('fetchPostDetailAction error:', e);
+                commit('setPostDetail', null);
+            }
         },
 
+        // =====================
         // コメント一覧
-        fetchCommentsAction({ commit }, postId) {
-            const { $firestore } = useNuxtApp();
-            if (!postId) return () => {};
-
-            const q = query(
-                collection($firestore, "comments"),
-                where("postId", "==", postId),
-                orderBy("createdAt", "asc")
-            );
-
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                const comments = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                }));
-                commit("setComments", comments);
-            });
-
-            return unsubscribe;
+        // =====================
+        async fetchCommentsAction({ commit }, postId) {
+            try {
+                const comments = await $fetch(`${API_BASE_URL}/posts/${postId}/comments`);
+                commit('setComments', comments);
+            } catch (e) {
+                console.error('fetchCommentsAction error:', e);
+                commit('setComments', []);
+            }
         },
 
+        // =====================
         // コメント投稿
+        // =====================
         async addCommentAction({ rootGetters }, { postId, text }) {
-            const { $firestore } = useNuxtApp();
-            const user = rootGetters["auth/user"];
-            if (!user) throw new Error("ログインが必要です。");
+            const user = rootGetters['auth/user'];
+            if (!user) throw new Error('ログインが必要です。');
 
-            const msg = typeof text === "string" ? text.trim() : "";
-            if (!msg) throw new Error("コメントを入力してください。");
+            const msg = (text || '').trim();
+            if (!msg) throw new Error('コメントを入力してください。');
+            if (msg.length > 120) throw new Error('コメントは120文字以内で入力してください。');
 
-            const newComment = {
-                postId,
-                userId: user.uid,
-                username: user.email.split("@")[0],
-                text: msg,
-                createdAt: serverTimestamp()
-            };
+            const username = user.email.split('@')[0];
 
-            await addDoc(collection($firestore, "comments"), newComment);
-        }
-    }
+            await $fetch(`${API_BASE_URL}/posts/${postId}/comments`, {
+                method: 'POST',
+                body: {
+                    userId: user.uid,
+                    username,
+                    text: msg,
+                },
+            });
+        },
+    },
 };

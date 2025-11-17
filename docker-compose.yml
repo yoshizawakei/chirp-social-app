@@ -8,8 +8,7 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/var/www/html
-    # command: npm run dev
-    command: tail -f /dev/null
+    command: npm run dev
     depends_on:
       - nginx
     networks:
@@ -20,10 +19,10 @@ services:
       context: .
       dockerfile: docker/backend/Dockerfile
     container_name: laravel_backend
-    volumes:
-      - ./backend:/var/www/html
     ports:
       - "9000:9000"
+    volumes:
+      - ./backend:/var/www/html
     depends_on:
       - db
     networks:

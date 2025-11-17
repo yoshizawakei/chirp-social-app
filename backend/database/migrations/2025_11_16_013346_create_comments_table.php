@@ -4,26 +4,19 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tweet_id')->constrained()->onDelete('cascade');
-            $table->string('user_id');
-            $table->string('user_name');
-            $table->text('content');
+            $table->foreignId('post_id')->constrained('posts')->cascadeOnDelete();
+            $table->string('user_id');   // Firebase UID
+            $table->string('username');  // 表示用ユーザー名
+            $table->text('text');        // コメント内容（最大120文字想定）
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('comments');

@@ -1,3 +1,5 @@
+<!-- backend/routes/console.php -->
+
 <?php
 
 use Illuminate\Foundation\Inspiring;

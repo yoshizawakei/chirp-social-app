@@ -13,9 +13,6 @@ return new class extends Migration
     {
         Schema::create('likes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tweet_id')->constrained()->onDelete('cascade');
-            $table->string('user_id');
-            $table->unique(['tweet_id', 'user_id']);
             $table->timestamps();
         });
     }

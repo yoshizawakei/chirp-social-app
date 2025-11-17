@@ -18,17 +18,17 @@
                 <div class="post-actions">
                     <button class="action-btn" @click="goToDetail(post.id)">
                         <img :src="detailIcon" alt="コメント" class="action-icon icon-detail-img" />
+                        <span class="comment-count">{{ post.commentsCount || 0 }}</span> <!-- ★ 追加 -->
                     </button>
 
                     <button
                         class="action-btn"
                         @click="likePost(post.id)"
-                        :class="{ 'liked': post.likes.includes(currentUserId) }"
-                    >
+                        :class="{ liked: post.likes.includes(currentUserId) }">
                         <img
-                            :src="heartIcon"
-                            alt="いいね"
-                            class="action-icon icon-heart-img"
+                        :src="heartIcon"
+                        alt="いいね"
+                        class="action-icon icon-heart-img"
                         />
                         <span class="like-count">{{ post.likeCount || 0 }}</span>
                     </button>
@@ -36,12 +36,11 @@
                     <button
                         v-if="isPostOwner(post.userId)"
                         class="action-btn delete-btn"
-                        @click="deletePost(post.id)"
-                    >
+                        @click="deletePost(post.id)">
                         <img
-                            :src="crossIcon"
-                            alt="削除"
-                            class="action-icon icon-cross-img"
+                        :src="crossIcon"
+                        alt="削除"
+                        class="action-icon icon-cross-img"
                         />
                     </button>
                 </div>
@@ -72,15 +71,16 @@ const currentUserId = computed(() => store.getters['auth/user']?.uid);
 let unsubscribeListener = null;
 
 onMounted(async () => {
+    // Firestore のリアルタイムはやめて、単純に一覧を取得する
     try {
-        unsubscribeListener = await store.dispatch('posts/fetchPostsAction');
+        await store.dispatch('posts/fetchPostsAction');
     } catch (e) {
-        console.error('Failed to set up post listener:', e);
+        console.error('Failed to fetch posts:', e);
     }
 });
 
 onUnmounted(() => {
-    if (unsubscribeListener) unsubscribeListener();
+    // 何もしなくてOK（リアルタイムリスナーを使っていないため）
 });
 
 const formatTime = (ts) => {
@@ -90,21 +90,23 @@ const formatTime = (ts) => {
         let date;
 
         if (ts.toDate) {
-        date = ts.toDate();          // Firestore Timestamp
+            date = ts.toDate();          // Firestore Timestamp (もう使わない想定)
         } else if (ts instanceof Date) {
-        date = ts;                   // JS Date
+            date = ts;                   // JS Date
         } else if (typeof ts === 'number') {
-        date = new Date(ts);         // UNIX time
+            date = new Date(ts);         // UNIX time
+        } else if (typeof ts === 'string') {
+            date = new Date(ts);         // Laravel からの文字列
         } else {
-        return '日時不明';
+            return '日時不明';
         }
 
         return date.toLocaleString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
         });
     } catch (e) {
         return '日時不明';
@@ -115,11 +117,14 @@ const isPostOwner = (postUserId) => postUserId === currentUserId.value;
 
 const likePost = async (postId) => {
     await store.dispatch('posts/likePostAction', postId);
+    // いいね後に一覧再取得して最新状態にする
+    await store.dispatch('posts/fetchPostsAction');
 };
 
 const deletePost = async (postId) => {
     if (confirm('本当にこの投稿を削除しますか？')) {
         await store.dispatch('posts/deletePostAction', postId);
+        await store.dispatch('posts/fetchPostsAction');
     }
 };
 
@@ -127,6 +132,7 @@ const goToDetail = (postId) => {
     navigateTo(`/post/${postId}`);
 };
 </script>
+
 
 
 <style scoped>
@@ -226,4 +232,9 @@ const goToDetail = (postId) => {
     text-align: center;
     font-size: 16px;
 }
+.comment-count {
+    font-size: 13px;
+    margin-left: 2px;
+}
+
 </style>

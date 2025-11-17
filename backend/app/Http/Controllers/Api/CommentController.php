@@ -3,43 +3,28 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Tweet;
+use App\Models\Post;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 
 class CommentController extends Controller
 {
-    /**
-     * 特定の投稿のコメント一覧表示
-     */
-    public function index(Tweet $tweet): JsonResponse
+    // コメント追加
+    public function store(Request $request, $postId)
     {
-        $comments = $tweet->comments()->latest()->get();
+        $post = Post::findOrFail($postId);
 
-        return response()->json([
-            'comments' => $comments,
-            'tweet' => $tweet
-        ]);
-    }
-
-    /**
-     * コメントの追加処理 (POST)
-     */
-    public function store(Request $request, Tweet $tweet): JsonResponse
-    {
-        $validated = $request->validate([
-            'content' => ['required', 'string', 'max:120'],
-            'user_id' => ['required', 'string'],
-            'user_name' => ['required', 'string', 'max:20'],
+        $data = $request->validate([
+            'userId' => 'required|string',
+            'username' => 'required|string|max:50',
+            'text' => 'required|string|max:120',
         ]);
 
-        $comment = $tweet->comments()->create($validated);
+        $comment = $post->comments()->create([
+            'user_id' => $data['userId'],
+            'username' => $data['username'],
+            'text' => $data['text'],
+        ]);
 
-        return response()->json([
-            'message' => 'コメントが追加されました。',
-            'comment' => $comment
-        ], 201);
+        return response()->json($comment, 201);
     }
-
-    // 💡 **コメント削除が必要であれば、ここに destroy メソッドを追加します。**
 }
