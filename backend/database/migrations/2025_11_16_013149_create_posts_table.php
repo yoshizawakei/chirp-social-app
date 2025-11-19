@@ -10,8 +10,8 @@ return new class extends Migration {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->string('user_id');
-            $table->string('username');
-            $table->text('message');
+            $table->string('username', 50);
+            $table->string('message', 120);
             $table->timestamps();
         });
     }

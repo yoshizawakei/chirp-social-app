@@ -1,240 +1,115 @@
-<!-- frontend/pages/index.vue -->
 <template>
-    <div class="page-content">
-        <h2 class="page-title">ホーム</h2>
+    <div class="text-white">
 
-        <div v-if="posts.length > 0" class="posts-container">
-            <div
-                v-for="post in posts"
-                :key="post.id"
-                class="post-item"
-            >
-                <div class="post-header">
-                    <span class="post-username">@{{ post.username || '名無し' }}</span>
-                    <span class="timestamp">{{ formatTime(post.createdAt) }}</span>
-                </div>
-                <p class="post-message">{{ post.message }}</p>
+        <!-- タイトル -->
+        <h1 class="text-2xl font-bold mb-4">ホーム</h1>
 
-                <div class="post-actions">
-                    <button class="action-btn" @click="goToDetail(post.id)">
-                        <img :src="detailIcon" alt="コメント" class="action-icon icon-detail-img" />
-                        <span class="comment-count">{{ post.commentsCount || 0 }}</span> <!-- ★ 追加 -->
-                    </button>
+        <!-- 仕切り線 -->
+        <div class="border-t border-gray-500 mb-6"></div>
 
-                    <button
-                        class="action-btn"
-                        @click="likePost(post.id)"
-                        :class="{ liked: post.likes.includes(currentUserId) }">
-                        <img
-                        :src="heartIcon"
-                        alt="いいね"
-                        class="action-icon icon-heart-img"
-                        />
-                        <span class="like-count">{{ post.likeCount || 0 }}</span>
-                    </button>
+        <!-- 投稿一覧 -->
+        <div v-if="loading" class="text-center py-6 text-gray-400">
+        読み込み中...
+        </div>
 
-                    <button
-                        v-if="isPostOwner(post.userId)"
-                        class="action-btn delete-btn"
-                        @click="deletePost(post.id)">
-                        <img
-                        :src="crossIcon"
-                        alt="削除"
-                        class="action-icon icon-cross-img"
-                        />
-                    </button>
-                </div>
+        <div v-else>
+        <div
+            v-for="post in posts"
+            :key="post.id"
+            class="py-4 border-b border-gray-500"
+        >
+
+            <!-- 上段：ユーザ名 + アイコン群 -->
+            <div class="flex justify-between items-center mb-1">
+
+            <!-- ユーザ名 -->
+            <div class="text-lg font-bold">{{ post.username }}</div>
+
+            <!-- アイコン群 -->
+            <div class="flex items-center gap-4">
+
+                <!-- いいね -->
+                <button @click="toggleLike(post)" class="hover:opacity-60 flex items-center gap-1">
+                <img src="/assets/images/heart.png" class="w-6 h-6" />
+                <span class="text-sm">{{ post.likeCount }}</span>
+                </button>
+
+                <!-- 削除（自分の投稿のみ） -->
+                <button
+                v-if="post.userId === currentUserUid"
+                @click="deletePost(post.id)"
+                class="hover:opacity-60"
+                >
+                <img src="/assets/images/cross.png" class="w-6 h-6" />
+                </button>
+
+                <!-- 詳細画面へ -->
+                <NuxtLink
+                :to="`/posts/${post.id}`"
+                class="hover:opacity-60"
+                >
+                <img src="/assets/images/detail.png" class="w-6 h-6" />
+                </NuxtLink>
+
             </div>
+            </div>
+
+            <!-- 本文 -->
+            <div class="whitespace-pre-wrap text-base text-gray-100">
+            {{ post.message }}
+            </div>
+
         </div>
-        <div v-else class="empty-message">
-            投稿はまだありません。サイドバーから最初の投稿をシェアしましょう！
         </div>
+
     </div>
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue';
-import { useNuxtApp, navigateTo } from '#app';
+import { useAuth } from "~/composables/useAuth";
+const config = useRuntimeConfig().public;
 
-definePageMeta({ middleware: 'auth' });
+const posts = ref([]);
+const loading = ref(true);
 
-import heartIcon from '~/assets/images/heart.png';
-import crossIcon from '~/assets/images/cross.png';
-import detailIcon from '~/assets/images/detail.png';
+const { user, init } = useAuth();
 
-const nuxtApp = useNuxtApp();
-const store = nuxtApp.vueApp.config.globalProperties.$store;
-
-const posts = computed(() => store.getters['posts/allPosts'] || []);
-const currentUserId = computed(() => store.getters['auth/user']?.uid);
-
-let unsubscribeListener = null;
-
+// 初期ロード
 onMounted(async () => {
-    // Firestore のリアルタイムはやめて、単純に一覧を取得する
-    try {
-        await store.dispatch('posts/fetchPostsAction');
-    } catch (e) {
-        console.error('Failed to fetch posts:', e);
-    }
+    await init();
+    await fetchPosts();
 });
 
-onUnmounted(() => {
-    // 何もしなくてOK（リアルタイムリスナーを使っていないため）
-});
+const currentUserUid = computed(() => user.value?.uid ?? null);
 
-const formatTime = (ts) => {
-    if (!ts) return '日時不明';
-
-    try {
-        let date;
-
-        if (ts.toDate) {
-            date = ts.toDate();          // Firestore Timestamp (もう使わない想定)
-        } else if (ts instanceof Date) {
-            date = ts;                   // JS Date
-        } else if (typeof ts === 'number') {
-            date = new Date(ts);         // UNIX time
-        } else if (typeof ts === 'string') {
-            date = new Date(ts);         // Laravel からの文字列
-        } else {
-            return '日時不明';
-        }
-
-        return date.toLocaleString('ja-JP', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    } catch (e) {
-        return '日時不明';
-    }
+// 投稿取得
+const fetchPosts = async () => {
+    loading.value = true;
+    posts.value = await $fetch(`${config.API_URL}/posts`);
+    loading.value = false;
 };
 
-const isPostOwner = (postUserId) => postUserId === currentUserId.value;
-
-const likePost = async (postId) => {
-    await store.dispatch('posts/likePostAction', postId);
-    // いいね後に一覧再取得して最新状態にする
-    await store.dispatch('posts/fetchPostsAction');
+// いいね処理
+const toggleLike = async (post) => {
+    const token = await user.value.getIdToken();
+    await $fetch(`${config.API_URL}/posts/${post.id}/like`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    await fetchPosts();
 };
 
-const deletePost = async (postId) => {
-    if (confirm('本当にこの投稿を削除しますか？')) {
-        await store.dispatch('posts/deletePostAction', postId);
-        await store.dispatch('posts/fetchPostsAction');
-    }
-};
-
-const goToDetail = (postId) => {
-    navigateTo(`/post/${postId}`);
+// 削除処理
+const deletePost = async (id) => {
+    const token = await user.value.getIdToken();
+    await $fetch(`${config.API_URL}/posts/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    await fetchPosts();
 };
 </script>
 
-
-
 <style scoped>
-.page-content {
-    min-height: 100vh;
-}
-.page-title {
-    font-size: 20px;
-    font-weight: bold;
-    color: white;
-    padding: 15px 20px;
-    border-bottom: 1px solid #38444d;
-    text-align: left;
-    position: sticky;
-    top: 0;
-    background-color: #15202b;
-    z-index: 5;
-}
-.post-item {
-    padding: 15px 20px;
-    border-bottom: 1px solid #38444d;
-    text-align: left;
-    transition: background-color 0.1s;
-}
-.post-item:hover {
-    background-color: #1a2a3a;
-}
-.post-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-    font-size: 15px;
-}
-.post-username {
-    font-weight: bold;
-    color: white;
-    margin-right: 10px;
-}
-.timestamp {
-    color: #8899a6;
-    font-size: 13px;
-}
-.post-message {
-    color: white;
-    font-size: 16px;
-    margin-bottom: 10px;
-    word-wrap: break-word;
-}
-.post-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 400px;
-    margin-top: 10px;
-}
-.action-btn {
-    display: flex;
-    align-items: center;
-    background: none;
-    border: none;
-    color: #8899a6;
-    cursor: pointer;
-    padding: 5px 0;
-    transition: color 0.2s;
-}
-.action-btn:hover {
-    color: #1da1f2;
-}
-.action-btn.liked {
-    color: #e0245e; /* いいね済み */
-}
-.action-btn.liked:hover {
-    color: #e0245e;
-}
-.action-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
-    filter: invert(50%) sepia(10%) saturate(100%) hue-rotate(180deg) brightness(100%) contrast(80%);
-}
-.action-btn.liked .icon-heart-img {
-    filter: none;
-}
-.like-count {
-    font-size: 13px;
-    margin-left: 2px;
-}
-.delete-btn {
-    color: #e74c3c;
-}
-.delete-btn:hover {
-    color: #c0392b;
-}
-.empty-message {
-    padding: 50px 20px;
-    color: #8899a6;
-    text-align: center;
-    font-size: 16px;
-}
-.comment-count {
-    font-size: 13px;
-    margin-left: 2px;
-}
-
 </style>
+

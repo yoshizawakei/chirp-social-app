@@ -1,65 +1,29 @@
-<!-- frontend/pages/login.vue -->
 <template>
-<NuxtLayout name="auth">
-<div class="form-container">
-    <div class="auth-box">
-    <h2>ログイン</h2>
-    <form @submit.prevent="loginUser">
-        <input v-model="email" type="email" placeholder="メールアドレス" required class="input-field" />
-        <input v-model="password" type="password" placeholder="パスワード" required class="input-field" />
-        <p v-if="error" class="error-message">{{ error }}</p>
-        <button type="submit" class="auth-button">ログイン</button>
-    </form>
-    <NuxtLink to="/signup" class="link-text">新規登録はこちら</NuxtLink>
+    <div class="login-page">
+        <h2>ログイン</h2>
+
+        <form @submit.prevent="submit">
+        <input v-model="email" type="email" placeholder="メールアドレス" required />
+        <input v-model="password" type="password" placeholder="パスワード" required />
+        <button type="submit">ログイン</button>
+        </form>
+
+        <p>アカウントがない？ <NuxtLink to="/register">新規登録</NuxtLink></p>
     </div>
-</div>
-</NuxtLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter, useNuxtApp, navigateTo } from '#app' 
+const email = ref("");
+const password = ref("");
+const router = useRouter();
+const { login } = useAuth();
 
-// definePageMeta は必ず一番上に来るようにする
-definePageMeta({
-  layout: 'auth', 
-})
-
-const nuxtApp = useNuxtApp()
-const router = useRouter()
-
-const email = ref('')
-const password = ref('')
-// 💡 修正済み: 変数名を 'error' に統一
-const error = ref(null)
-
-const loginUser = async () => {
-  const store = nuxtApp.vueApp.config.globalProperties.$store
-
-  if (!store) {
-    error.value = 'アプリケーションの初期化に失敗しました。'
-    console.error('Store is not initialized.')
-    return
-  }
-
-  error.value = null
-
-  try {
-    // 💡 修正済み: Vuex アクション名を 'loginAction' に修正
-    await store.dispatch('auth/loginAction', { 
-        email: email.value, 
-        password: password.value,
-    })
-    
-    // ログイン成功後、ホーム画面へリダイレクト
-    await navigateTo('/') 
-
-  } catch (e) {
-    error.value = 'ログインに失敗しました: ' + (e.message || '不明なエラー')
-    console.error('ログインエラー:', e)
-  }
-}
+const submit = async () => {
+    await login(email.value, password.value);
+    router.push("/");
+};
 </script>
+
 
 <style scoped>
 .form-container {

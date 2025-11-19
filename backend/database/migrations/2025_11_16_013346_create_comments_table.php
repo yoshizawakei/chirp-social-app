@@ -9,10 +9,10 @@ return new class extends Migration {
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('post_id')->constrained('posts')->cascadeOnDelete();
-            $table->string('user_id');   // Firebase UID
-            $table->string('username');  // 表示用ユーザー名
-            $table->text('text');        // コメント内容（最大120文字想定）
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
+            $table->string('user_id');
+            $table->string('username', 50);
+            $table->string('text', 120);   // コメント（120文字以内）
             $table->timestamps();
         });
     }

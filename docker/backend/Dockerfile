@@ -17,6 +17,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Laravel をコピー
 COPY ./backend /var/www/html
 
+# Firebase service account credentials
+COPY firebase_credentials.json /var/www/html/firebase_credentials.json
+
 # vendor インストール
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 

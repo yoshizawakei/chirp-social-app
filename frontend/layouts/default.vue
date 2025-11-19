@@ -1,110 +1,80 @@
 <template>
-  <div class="app-layout">
-    <aside class="sidebar">
-      <h1 class="logo">SHARE</h1>
+  <div class="min-h-screen bg-[#0F1923] text-white flex">
 
-      <nav class="navigation">
-        <NuxtLink to="/" class="sidebar-link">
-          <img :src="homeIcon" alt="ホーム" class="icon-img" />ホーム
+    <!-- 左サイドバー -->
+    <aside class="w-64 p-6 border-r border-gray-600 flex flex-col">
+      
+      <!-- ロゴ -->
+      <h1 class="text-4xl font-black mb-8 tracking-wide">SHARE</h1>
+
+      <!-- メニュー -->
+      <nav class="flex flex-col gap-4 mb-10 text-lg">
+
+        <NuxtLink to="/" class="flex items-center gap-3 hover:opacity-80">
+          <span class="text-2xl">🏠</span>
+          <span>ホーム</span>
         </NuxtLink>
-        <NuxtLink to="/profile" class="sidebar-link">
-          <img :src="profileIcon" alt="プロフィール" class="icon-img" />プロフィール
-        </NuxtLink>
-        <button @click="logout" class="sidebar-link logout-btn">
-          <img :src="logoutIcon" alt="ログアウト" class="icon-img" />ログアウト
-        </button>
-      </nav>
-
-      <div class="share-section">
-        <h3 class="share-title">シェア</h3>
-
-        <textarea
-          v-model="message"
-          placeholder="今どうしてる？"
-          class="share-input"
-          :disabled="isPosting"
-          maxlength="120"
-        ></textarea>
-
-        <p class="char-count">{{ message.length }} / 120</p>
 
         <button
-          class="share-button"
-          @click="handleShareClick"
-          :disabled="!message.trim() || isPosting || message.length > 120"
+          @click="logout"
+          class="flex items-center gap-3 hover:opacity-80 text-left"
         >
-          {{ isPosting ? "投稿中..." : "シェアする" }}
+          <span class="text-2xl">🚪</span>
+          <span>ログアウト</span>
         </button>
-      </div>
+
+      </nav>
+
+      <!-- シェア（投稿フォーム） -->
+      <section class="mt-auto">
+        <h2 class="mb-2">シェア</h2>
+
+        <textarea
+          v-model="shareText"
+          class="w-full bg-transparent border border-gray-500 rounded p-2 h-32 resize-none"
+        ></textarea>
+
+        <div class="mt-3 flex justify-center">
+          <button
+            @click="submitShare"
+            class="px-6 py-2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-90"
+          >
+            シェアする
+          </button>
+        </div>
+      </section>
     </aside>
 
-    <main class="main-content">
+    <!-- 右側のページコンテンツ -->
+    <main class="flex-1 p-8">
       <slot />
     </main>
+
   </div>
 </template>
 
 <script setup>
-import { useNuxtApp, navigateTo } from "#app";
-import { ref } from "vue";
-import homeIcon from "~/assets/images/home.png";
-import profileIcon from "~/assets/images/profile.png";
-import logoutIcon from "~/assets/images/logout.png";
+import { useAuth } from "~/composables/useAuth";
 
-const nuxtApp = useNuxtApp();
-const store = nuxtApp.vueApp.config.globalProperties.$store;
+const shareText = ref("");
+const { user, logout } = useAuth();
 
-const message = ref("");
-const isPosting = ref(false);
+const submitShare = async () => {
+  if (!shareText.value.trim()) return;
 
-const logout = async () => {
-  if (!confirm("ログアウトしますか？")) return;
+  const token = await user.value.getIdToken();
 
-  try {
-    await store.dispatch("auth/logoutAction");
-    await navigateTo("/login");
-  } catch (e) {
-    console.error("ログアウトエラー:", e);
-    alert("ログアウトに失敗しました。");
-  }
-};
+  await $fetch("http://localhost/api/posts", {
+    method: "POST",
+    body: { message: shareText.value },
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
-const handleShareClick = async () => {
-  const text = message.value.trim();
-
-  // バリデーション
-  if (!text || text.length > 120) {
-    alert("メッセージを入力するか、文字数を調整してください (120文字以内)。");
-    return;
-  }
-
-  const user = store.getters["auth/user"];
-  if (!user) {
-    alert("ログイン状態が確認できません。再度ログインしてください。");
-    return;
-  }
-
-  isPosting.value = true;
-
-  try {
-    await store.dispatch("posts/addPostAction", {
-      message: text,
-      userId: user.uid,
-      userEmail: user.email,
-    });
-
-    // ✅ 投稿成功後に入力欄をクリア
-    message.value = "";
-  } catch (e) {
-    console.error("投稿エラー:", e);
-    alert("投稿エラー: " + (e.message || "不明なエラーです"));
-  } finally {
-    // ✅ 必ず「投稿中…」を解除
-    isPosting.value = false;
-  }
+  shareText.value = "";
 };
 </script>
 
+<!-- 
 <style scoped>
 .app-layout {
   display: flex;
@@ -219,4 +189,4 @@ const handleShareClick = async () => {
   max-width: 800px;
   width: calc(100% - 250px);
 }
-</style>
+</style> -->

@@ -1,163 +1,138 @@
-<!-- frontend/pages/post/[id].vue -->
 <template>
-  <div class="page-content">
-    <h2 class="page-title">
-      投稿詳細
-      <span v-if="comments.length">（コメント {{ comments.length }}件）</span>
-    </h2>
+  <div class="max-w-xl mx-auto py-6">
 
-    <div v-if="postDetail" class="post-detail-container">
-      <!-- 元の投稿 -->
-      <div class="post-item original-post">
-        <div class="post-header">
-          <span class="post-username">@{{ postDetail.username || "名無し" }}</span>
-          <span class="timestamp">{{ formatTime(postDetail.createdAt) }}</span>
-        </div>
-        <p class="post-message">{{ postDetail.message }}</p>
+    <!-- 戻るボタン -->
+    <NuxtLink to="/" class="text-blue-500">&lt; 戻る</NuxtLink>
+
+    <!-- 投稿本体 -->
+    <div class="border-b mt-4 pb-4">
+      <div class="flex justify-between mb-1">
+        <span class="font-bold">{{ post?.username }}</span>
+        <span class="text-sm text-gray-500">
+          {{ formatDate(post?.createdAt) }}
+        </span>
       </div>
 
-      <!-- コメント入力 -->
-      <div class="comment-input-area">
-        <textarea
-          v-model="newComment"
-          placeholder="コメントを入力...（120文字以内）"
-          class="comment-input"
-          :disabled="isPostingComment"
-          maxlength="120"
-        ></textarea>
-        <div class="comment-footer">
-          <span class="comment-char-count">{{ newComment.length }} / 120</span>
-          <button
-            class="comment-button"
-            @click="postComment"
-            :disabled="!newComment.trim() || isPostingComment || newComment.length > 120"
-          >
-            {{ isPostingComment ? "投稿中..." : "コメント" }}
-          </button>
-        </div>
-      </div>
+      <p class="whitespace-pre-wrap mb-2">{{ post?.message }}</p>
 
-      <!-- コメント一覧 -->
-      <div class="comment-list">
-        <div v-if="comments.length === 0" class="no-comments">
-          まだコメントがありません。
-        </div>
-
-        <div
-          v-for="comment in comments"
-          :key="comment.id"
-          class="comment-item"
-        >
-          <div class="comment-header">
-            <span class="comment-username">@{{ comment.username }}</span>
-            <span class="timestamp">{{ formatTime(comment.createdAt) }}</span>
-          </div>
-          <p class="comment-message">{{ comment.text }}</p>
-        </div>
+      <div class="text-sm text-gray-600 flex gap-4">
+        ❤️ {{ post?.likeCount }}
+        💬 {{ comments.length }}
       </div>
     </div>
 
-    <div v-else class="loading-message">
-      {{ postDetail === null ? "投稿が見つかりません。" : "投稿を読み込み中..." }}
+    <!-- コメント一覧 -->
+    <h2 class="text-xl font-bold mt-6 mb-4">コメント</h2>
+
+    <div v-if="loadingComments" class="text-center py-4">
+      読み込み中...
     </div>
+
+    <div v-else>
+      <div
+        v-for="c in comments"
+        :key="c.id"
+        class="border-b py-3"
+      >
+        <div class="flex justify-between mb-1">
+          <span class="font-bold">{{ c.username }}</span>
+          <span class="text-sm text-gray-500">
+            {{ formatDate(c.createdAt) }}
+          </span>
+        </div>
+        <p class="whitespace-pre-wrap">{{ c.text }}</p>
+      </div>
+    </div>
+
+    <!-- コメント投稿フォーム -->
+    <form @submit.prevent="submitComment" class="mt-6 flex gap-2">
+      <input
+        v-model="commentText"
+        type="text"
+        placeholder="コメントを書く..."
+        class="flex-1 border px-3 py-2 rounded"
+      />
+      <button class="bg-blue-500 text-white px-4 py-2 rounded">
+        投稿
+      </button>
+    </form>
+
   </div>
 </template>
 
 <script setup>
-console.log("🔥 [id].vue is loaded correctly");
+import { useAuth } from "~/composables/useAuth";
 
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRoute, useNuxtApp } from "#app";
-
-definePageMeta({
-  middleware: "auth",
-});
-
-const nuxtApp = useNuxtApp();
-const store = nuxtApp.vueApp.config.globalProperties.$store;
 const route = useRoute();
+const config = useRuntimeConfig().public;
 
-const postId = route.params.id;
-const newComment = ref("");
-const isPostingComment = ref(false);
+const post = ref(null);
+const comments = ref([]);
+const loadingComments = ref(true);
+const commentText = ref("");
 
-const postDetail = computed(() => store.getters["posts/postDetail"]);
-const comments = computed(() => store.getters["posts/comments"] || []);
+const { user, init } = useAuth();
 
+// -------------------------------------------
+// 初期化
+// -------------------------------------------
 onMounted(async () => {
-  if (postId) {
-    await store.dispatch("posts/fetchPostDetailAction", postId);
-    await store.dispatch("posts/fetchCommentsAction", postId);
-  }
+  await init();
+  await fetchPost();
+  await fetchComments();
 });
 
-onUnmounted(() => {
-  store.commit("posts/setPostDetail", null);
-  store.commit("posts/setComments", []);
-});
-
-const formatTime = (ts) => {
-  if (!ts) return "日時不明";
-
-  try {
-    let date;
-
-    if (ts.toDate) {
-      date = ts.toDate(); // Firestore Timestamp（互換用）
-    } else if (ts instanceof Date) {
-      date = ts;
-    } else if (typeof ts === "number") {
-      date = new Date(ts);
-    } else if (typeof ts === "string") {
-      date = new Date(ts); // Laravel の createdAt
-    } else {
-      return "日時不明";
-    }
-
-    return date.toLocaleString("ja-JP", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return "日時不明";
-  }
+// -------------------------------------------
+// 投稿詳細
+// -------------------------------------------
+const fetchPost = async () => {
+  post.value = await $fetch(`${config.API_URL}/posts/${route.params.id}`);
 };
 
-const postComment = async () => {
-  const text = newComment.value.trim();
+// -------------------------------------------
+// コメント一覧
+// -------------------------------------------
+const fetchComments = async () => {
+  loadingComments.value = true;
 
-  if (!text || text.length > 120) {
-    alert("コメントを入力するか、文字数を調整してください (120文字以内)。");
-    return;
-  }
+  comments.value = await $fetch(
+    `${config.API_URL}/posts/${route.params.id}/comments`
+  );
 
-  isPostingComment.value = true;
+  loadingComments.value = false;
+};
 
-  try {
-    await store.dispatch("posts/addCommentAction", {
-      postId,
-      text,
-    });
+// -------------------------------------------
+// コメント投稿
+// -------------------------------------------
+const submitComment = async () => {
+  if (!commentText.value.trim()) return;
 
-    // ✅ コメント投稿後に入力欄をクリア
-    newComment.value = "";
+  const token = await user.value.getIdToken();
 
-    // ✅ 最新のコメント一覧を再取得して反映
-    await store.dispatch("posts/fetchCommentsAction", postId);
-    // ✅ 投稿詳細側のコメント数も最新化したいなら一覧再取得も可
-    await store.dispatch("posts/fetchPostDetailAction", postId);
-  } catch (e) {
-    console.error("Comment Post Error:", e);
-    alert("コメントの投稿に失敗しました。再度ログインしてください。");
-  } finally {
-    isPostingComment.value = false;
-  }
+  await $fetch(`${config.API_URL}/posts/${route.params.id}/comments`, {
+    method: "POST",
+    body: {
+      text: commentText.value,
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  commentText.value = "";
+  await fetchComments();
+};
+
+// -------------------------------------------
+// 日付整形
+// -------------------------------------------
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
 };
 </script>
-
 
 <style scoped>
 .page-content {

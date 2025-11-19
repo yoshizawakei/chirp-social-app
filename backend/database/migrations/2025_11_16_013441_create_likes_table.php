@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::create('likes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
+            $table->string('user_id');
             $table->timestamps();
+
+            $table->unique(['post_id', 'user_id']); // 同じ人が2回いいねしない
         });
     }
 
