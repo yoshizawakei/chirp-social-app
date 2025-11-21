@@ -1,89 +1,157 @@
 <template>
     <div class="login-page">
-        <h2>ログイン</h2>
+        <!-- 左上ロゴ -->
+        <img src="/assets/images/logo.png" alt="SHARE" class="logo" />
 
-        <form @submit.prevent="submit">
-        <input v-model="email" type="email" placeholder="メールアドレス" required />
-        <input v-model="password" type="password" placeholder="パスワード" required />
-        <button type="submit">ログイン</button>
+        <!-- 右上メニュー -->
+        <div class="top-menu">
+        <NuxtLink to="/register" class="menu-link">新規登録</NuxtLink>
+        <NuxtLink to="/login" class="menu-link">ログイン</NuxtLink>
+        </div>
+
+        <!-- 中央カード -->
+        <div class="card">
+        <h2 class="card-title">ログイン</h2>
+
+        <form @submit.prevent="handleLogin" class="form">
+            <input
+            v-model="email"
+            type="email"
+            placeholder="メールアドレス"
+            class="input"
+            />
+            <input
+            v-model="password"
+            type="password"
+            placeholder="パスワード"
+            class="input"
+            />
+
+            <div class="button-wrap">
+            <button type="submit" class="btn-login">ログイン</button>
+            </div>
         </form>
-
-        <p>アカウントがない？ <NuxtLink to="/register">新規登録</NuxtLink></p>
+        </div>
     </div>
 </template>
 
 <script setup>
-const email = ref("");
-const password = ref("");
-const router = useRouter();
+import { useAuth } from "~/composables/useAuth";
+
+definePageMeta({
+    // レイアウトを使わず、このページだけで完結させる
+    layout: false,
+});
+
 const { login } = useAuth();
 
-const submit = async () => {
+const email = ref("");
+const password = ref("");
+
+const handleLogin = async () => {
+    if (!email.value || !password.value) return;
+
     await login(email.value, password.value);
-    router.push("/");
+    navigateTo("/");
 };
 </script>
 
-
 <style scoped>
-.form-container {
+.login-page {
+    min-height: 100vh;
+    background-color: #0f1923; /* 背景色 */
+    color: #ffffff;
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+    Arial, "ヒラギノ角ゴ ProN", "Hiragino Kaku Gothic ProN", "メイリオ",
+    Meiryo, sans-serif;
 }
-.auth-box {
-    background: white;
-    padding: 40px;
-    border-radius: 8px;
-    width: 100%;
-    max-width: 380px;
-    text-align: center;
-    color: #333;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+
+/* ロゴ */
+.logo {
+    position: absolute;
+    top: 24px;
+    left: 40px;
+    height: 40px; /* 画像に合わせて高さだけ指定 */
 }
-h2 {
-    font-size: 24px;
-    margin-bottom: 30px;
-    font-weight: 600;
-    color: #333;
-}
-.input-field {
-    width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 16px;
-}
-.auth-button {
-    width: 100%;
-    padding: 12px;
-    background-color: #6a40e7;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.auth-button:hover {
-    background-color: #5b34d9;
-}
-.error-message {
-    color: #e74c3c;
-    margin-top: -10px;
-    margin-bottom: 20px;
+
+/* 右上メニュー */
+.top-menu {
+    position: absolute;
+    top: 24px;
+    right: 40px;
+    display: flex;
+    gap: 24px;
     font-size: 14px;
-    text-align: left;
-    padding-left: 5px;
 }
-.link-text {
-    color: #6a40e7;
+
+.menu-link {
+    color: #ffffff;
     text-decoration: none;
+}
+
+.menu-link:hover {
+    text-decoration: underline;
+}
+
+/* カード本体 */
+.card {
+    width: 420px;
+    background-color: #ffffff;
+    color: #000000;
+    border-radius: 6px;
+    padding: 32px 40px 36px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* タイトル */
+.card-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 24px;
+}
+
+/* フォーム */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.input {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #bdbdbd;
     font-size: 14px;
-    margin-top: 10px;
-    display: inline-block;
+    outline: none;
+}
+
+.input:focus {
+    border-color: #7c4dff;
+}
+
+/* ボタン */
+.button-wrap {
+    margin-top: 12px;
+    text-align: center;
+}
+
+.btn-login {
+    padding: 8px 32px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #ffffff;
+    background: linear-gradient(90deg, #7c4dff, #4c6fff);
+    box-shadow: 0 4px 0 #3b3b3b;
+}
+
+.btn-login:hover {
+    opacity: 0.9;
 }
 </style>

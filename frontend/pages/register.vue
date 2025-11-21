@@ -1,68 +1,53 @@
 <template>
-  <div class="min-h-screen bg-[#0F1923] text-white relative">
+  <div class="register-page">
+    <!-- 左上ロゴ -->
+    <img src="/assets/images/logo.png" alt="SHARE" class="logo" />
 
-    <!-- 右上のメニュー -->
-    <div class="absolute top-6 right-8 flex gap-6 text-white text-sm">
-      <NuxtLink to="/register" class="hover:opacity-70">新規登録</NuxtLink>
-      <NuxtLink to="/login" class="hover:opacity-70">ログイン</NuxtLink>
+    <!-- 右上メニュー -->
+    <div class="top-menu">
+      <NuxtLink to="/register" class="menu-link">新規登録</NuxtLink>
+      <NuxtLink to="/login" class="menu-link">ログイン</NuxtLink>
     </div>
 
-    <!-- ロゴ -->
-    <img
-      src="/assets/images/logo.png"
-      alt="SHARE"
-      class="absolute top-6 left-6 w-40"
-    />
+    <!-- 中央カード -->
+    <div class="card">
+      <h2 class="card-title">新規登録</h2>
 
-    <!-- カード中央配置 -->
-    <div class="flex items-center justify-center min-h-screen">
-      <div class="bg-white text-black w-[420px] rounded-lg shadow-md p-8">
+      <form @submit.prevent="handleRegister" class="form">
+        <input
+          v-model="name"
+          type="text"
+          placeholder="ユーザー名"
+          class="input"
+        />
+        <input
+          v-model="email"
+          type="email"
+          placeholder="メールアドレス"
+          class="input"
+        />
+        <input
+          v-model="password"
+          type="password"
+          placeholder="パスワード"
+          class="input"
+        />
 
-        <h2 class="text-center text-xl font-bold mb-6">新規登録</h2>
-
-        <!-- フォーム -->
-        <form @submit.prevent="handleRegister" class="flex flex-col gap-4">
-
-          <input
-            v-model="name"
-            type="text"
-            placeholder="ユーザー ネーム"
-            class="border border-gray-400 w-full p-2 rounded-lg"
-          />
-
-          <input
-            v-model="email"
-            type="email"
-            placeholder="メールアドレス"
-            class="border border-gray-400 w-full p-2 rounded-lg"
-          />
-
-          <input
-            v-model="password"
-            type="password"
-            placeholder="パスワード"
-            class="border border-gray-400 w-full p-2 rounded-lg"
-          />
-
-          <div class="flex justify-center mt-2">
-            <button
-              type="submit"
-              class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-6 py-2 rounded-full hover:opacity-90"
-            >
-              新規登録
-            </button>
-          </div>
-
-        </form>
-
-      </div>
+        <div class="button-wrap">
+          <button type="submit" class="btn-register">新規登録</button>
+        </div>
+      </form>
     </div>
-
   </div>
 </template>
 
 <script setup>
 import { useAuth } from "~/composables/useAuth";
+
+definePageMeta({
+  layout: false, // defaultレイアウトを使用しない
+});
+
 const { register } = useAuth();
 
 const name = ref("");
@@ -73,7 +58,106 @@ const handleRegister = async () => {
   if (!name.value || !email.value || !password.value) return;
 
   await register(email.value, password.value, name.value);
-
   navigateTo("/");
 };
 </script>
+
+<style scoped>
+.register-page {
+  min-height: 100vh;
+  background-color: #0f1923;
+  color: #ffffff;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+    Arial, "ヒラギノ角ゴ ProN", "Hiragino Kaku Gothic ProN", "メイリオ",
+    Meiryo, sans-serif;
+}
+
+/* ロゴ */
+.logo {
+  position: absolute;
+  top: 24px;
+  left: 40px;
+  height: 40px;
+}
+
+/* 右上メニュー */
+.top-menu {
+  position: absolute;
+  top: 24px;
+  right: 40px;
+  display: flex;
+  gap: 24px;
+  font-size: 14px;
+}
+
+.menu-link {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.menu-link:hover {
+  text-decoration: underline;
+}
+
+/* カード */
+.card {
+  width: 420px;
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 10px;
+  padding: 32px 40px 36px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* タイトル */
+.card-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+/* フォーム */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #bdbdbd;
+  font-size: 14px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #7c4dff;
+}
+
+/* ボタン */
+.button-wrap {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.btn-register {
+  padding: 8px 32px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ffffff;
+  background: linear-gradient(90deg, #7c4dff, #4c6fff);
+  box-shadow: 0 4px 0 #3b3b3b;
+}
+
+.btn-register:hover {
+  opacity: 0.9;
+}
+</style>
