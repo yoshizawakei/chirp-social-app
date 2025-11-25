@@ -105,7 +105,7 @@ const sharePost = async () => {
 }
 
 .share-box {
-  width: 100%;
+  width: 90%;
   height: 140px;
   border-radius: 12px;
   padding: 12px;

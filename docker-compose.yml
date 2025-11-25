@@ -8,9 +8,10 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/var/www/html
+      - /var/www/html/node_modules
     command: npm run dev
     depends_on:
-      - nginx
+      - db
     networks:
       - app-network
 
