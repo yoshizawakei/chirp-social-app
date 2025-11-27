@@ -4,39 +4,39 @@
 
         <div v-for="post in posts" :key="post.id" class="post-item">
 
-        <!-- 上段：ユーザー名 & アイコン -->
-        <div class="post-header">
-            <span class="username">{{ post.username }}</span>
+            <!-- 上段：ユーザー名 & アイコン -->
+            <div class="post-header">
+                <span class="username">{{ post.username }}</span>
 
-            <div class="icons">
+                <div class="icons">
 
-            <!-- ❤️ -->
-            <button class="icon-btn" @click="toggleLike(post.id)">
-                <img src="/assets/images/heart.png" class="icon-img" />
-                <span>{{ post.likeCount }}</span>
-            </button>
+                    <!-- ❤️ -->
+                    <button class="icon-btn" @click="toggleLike(post.id)">
+                        <img src="/assets/images/heart.png" class="icon-img" />
+                        <span>{{ post.likeCount }}</span>
+                    </button>
 
-            <!-- ❌ -->
-            <button
-                v-if="post.userId === currentUserUid"
-                @click="deletePost(post.id)"
-                class="icon-btn"
-            >
-                <img src="/assets/images/cross.png" class="icon-img" />
-            </button>
+                    <!-- ❌ 削除 -->
+                    <button
+                        v-if="post.userId === currentUserUid"
+                        @click="deletePost(post.id)"
+                        class="icon-btn"
+                    >
+                        <img src="/assets/images/cross.png" class="icon-img" />
+                    </button>
 
-            <!-- ↪ -->
-            <NuxtLink :to="`/posts/${post.id}`" class="icon-btn">
-                <img src="/assets/images/detail.png" class="icon-img" />
-            </NuxtLink>
+                    <!-- ↪ 詳細 -->
+                    <NuxtLink :to="`/posts/${post.id}`" class="icon-btn">
+                        <img src="/assets/images/detail.png" class="icon-img" />
+                    </NuxtLink>
 
+                </div>
             </div>
-        </div>
 
-        <!-- メッセージ -->
-        <div class="message">{{ post.message }}</div>
+            <!-- メッセージ -->
+            <div class="message">{{ post.message }}</div>
 
-        <div class="divider"></div>
+            <div class="divider"></div>
         </div>
     </div>
 </template>
@@ -51,35 +51,49 @@ const config = useRuntimeConfig().public;
 
 const posts = ref([]);
 
+// ログイン UID
 const currentUserUid = computed(() => user.value?.uid ?? null);
 
+// 初期読み込み
 onMounted(async () => {
     posts.value = await $fetch(`${config.API_URL}/posts`);
+
+    // 自分が既にいいねしているかフラグ付け
+    posts.value = posts.value.map((p) => ({
+        ...p,
+        liked: p.likes.includes(currentUserUid.value),
+    }));
 });
 
 // いいね
 const toggleLike = async (id) => {
     const token = await user.value.getIdToken();
 
-    await $fetch(`${config.API_URL}/posts/${id}/like`, {
+    const index = posts.value.findIndex((p) => p.id === id);
+    if (index === -1) return;
+
+    const res = await $fetch(`${config.API_URL}/posts/${id}/like`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
+        body: { userId: user.value.uid },
     });
 
-    posts.value = await $fetch(`${config.API_URL}/posts`);
+    posts.value[index].liked = res.liked;
+    posts.value[index].likeCount = res.likeCount;
 };
 
-// 削除
+// ★★★ 削除機能（必須）★★★
 const deletePost = async (id) => {
     const token = await user.value.getIdToken();
 
     await $fetch(`${config.API_URL}/posts/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
+        body: { userId: user.value.uid },
     });
 
     posts.value = posts.value.filter((p) => p.id !== id);
-};
+    };
 </script>
 
 <style scoped>

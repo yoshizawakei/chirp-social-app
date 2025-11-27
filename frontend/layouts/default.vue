@@ -36,6 +36,7 @@
 
 <script setup>
 import { useAuth } from "~/composables/useAuth";
+
 const { user, init } = useAuth();
 const shareText = ref("");
 
@@ -52,12 +53,14 @@ const sharePost = async () => {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: {
-      message: shareText.value,
+      userId: user.value.uid,
       username: user.value.displayName || "名無し",
+      message: shareText.value,
     },
   });
 
   shareText.value = "";
+
   navigateTo("/", { replace: true });
 };
 </script>
@@ -71,11 +74,14 @@ const sharePost = async () => {
   font-family: system-ui, sans-serif;
 }
 
-/* サイドバー */
 .sidebar {
-  width: 260px;
+  width: 250px;
   padding: 24px;
   border-right: 1px solid #555;
+}
+
+.content {
+  margin-left: 10px;
 }
 
 .logo {
@@ -126,14 +132,5 @@ const sharePost = async () => {
   border: none;
   cursor: pointer;
   display: block;
-}
-.share-btn:hover {
-  opacity: 0.9;
-}
-
-/* メイン側 */
-.content {
-  flex: 1;
-  padding: 32px;
 }
 </style>
