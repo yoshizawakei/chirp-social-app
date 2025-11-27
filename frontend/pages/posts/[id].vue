@@ -16,10 +16,8 @@
 
           <!-- いいね -->
           <button @click="toggleLike" class="icon-btn">
-            <img
-              :src="post?.liked ? '/assets/images/heart_red.png' : '/assets/images/heart.png'"
-              class="icon-img"
-            />
+            <img src="/assets/images/heart.png"
+              class="icon-img"/>
             <span>{{ post?.likeCount }}</span>
           </button>
 
@@ -147,9 +145,7 @@ const deletePost = async () => {
 
 <style scoped>
 .detail-container {
-  width: 100%;
-  padding: 20px 30px;
-  background: #0f1923;
+
 }
 
 /* ページタイトル */
@@ -208,7 +204,7 @@ const deletePost = async () => {
   border-top: 1px solid #555;
   border-bottom: 1px solid #555;
   padding: 6px;
-  text-align: center;
+  text-align: left;
   font-size: 16px;
   margin-bottom: 10px;
 }

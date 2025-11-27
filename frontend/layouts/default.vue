@@ -81,7 +81,9 @@ const sharePost = async () => {
 }
 
 .content {
-  margin-left: 10px;
+  width: 90%;
+  padding: 20px 20px;
+  background: #0f1923;
 }
 
 .logo {
