@@ -1,31 +1,61 @@
 <template>
   <div class="detail-container text-white">
 
-    <!-- タイトル -->
     <h1 class="page-title">コメント</h1>
 
     <!-- 投稿ブロック -->
     <div class="post-block">
-
       <div class="post-header">
-        <!-- 投稿者名 -->
         <div class="post-username">{{ post?.username }}</div>
 
-        <!-- アイコン群 -->
         <div class="icon-group">
-
           <!-- いいね -->
           <button @click="toggleLike" class="icon-btn">
-            <img src="/assets/images/heart.png"
-              class="icon-img"/>
+            <img src="/assets/images/heart.png" class="icon-img" />
             <span>{{ post?.likeCount }}</span>
+          </button>
+
+          <!-- 投稿削除 -->
+          <button
+            v-if="post?.userId === currentUserUid"
+            @click="openDeletePostModal"
+            class="icon-btn"
+          >
+            <img src="/assets/images/cross.png" class="icon-img" />
+          </button>
+        </div>
+      </div>
+
+      <div class="post-message">{{ post?.message }}</div>
+    </div>
+
+    <!-- コメントタイトル -->
+    <div class="comment-title">コメント</div>
+
+    <!-- コメント一覧 -->
+    <div
+      v-for="c in comments"
+      :key="c.id"
+      class="comment-item"
+    >
+      <div class="comment-header">
+        <div class="comment-user">{{ c.username }}</div>
+
+        <!-- 自分のコメントだけ編集/削除表示 -->
+        <div v-if="c.userId === currentUserUid" class="comment-icons">
+
+          <!-- 編集 -->
+          <button
+            class="icon-btn"
+            @click="openEditModal(c)"
+          >
+            <img src="/assets/images/detail.png" class="icon-img" />
           </button>
 
           <!-- 削除 -->
           <button
-            v-if="post?.userId === currentUserUid"
-            @click="deletePost"
             class="icon-btn"
+            @click="openDeleteCommentModal(c)"
           >
             <img src="/assets/images/cross.png" class="icon-img" />
           </button>
@@ -33,32 +63,46 @@
         </div>
       </div>
 
-      <!-- 投稿本文 -->
-      <div class="post-message">{{ post?.message }}</div>
-
-    </div>
-
-    <!-- コメントタイトル -->
-    <div class="comment-title">コメント</div>
-
-    <!-- コメント一覧 -->
-    <div v-for="c in comments" :key="c.id" class="comment-item">
-      <div class="comment-user">{{ c.username }}</div>
       <div class="comment-text">{{ c.text }}</div>
     </div>
 
-    <!-- コメント投稿フォーム -->
+    <!-- コメント投稿 -->
     <form @submit.prevent="submitComment" class="comment-form">
-
       <input
         v-model="commentText"
         type="text"
         placeholder="コメントを書く..."
         class="comment-input"
       />
-
       <button class="comment-btn">コメント</button>
     </form>
+
+    <!-- 編集モーダル -->
+    <ConfirmModal
+      :visible="showEditModal"
+      message="コメントを編集しますか？"
+      inputLabel="新しい内容"
+      v-model="editText"
+      @confirm="confirmEdit"
+      @cancel="cancelEdit"
+      type="edit"
+    />
+
+    <!-- コメント削除モーダル -->
+    <ConfirmModal
+      :visible="showDeleteCommentModal"
+      message="このコメントを削除しますか？"
+      @confirm="confirmDeleteComment"
+      @cancel="showDeleteCommentModal = false"
+    />
+
+    <!-- 投稿削除モーダル -->
+    <ConfirmModal
+      :visible="showDeletePostModal"
+      message="この投稿を削除しますか？"
+      @confirm="confirmDeletePost"
+      @cancel="showDeletePostModal = false"
+    />
 
   </div>
 </template>
@@ -75,29 +119,43 @@ const post = ref(null);
 const comments = ref([]);
 const commentText = ref("");
 
+const currentUserUid = computed(() => user.value?.uid ?? null);
+
+// 編集関連
+const showEditModal = ref(false);
+const editTarget = ref(null);
+const editText = ref("");
+
+// コメント削除関連
+const showDeleteCommentModal = ref(false);
+const deleteTargetComment = ref(null);
+
+// 投稿削除関連
+const showDeletePostModal = ref(false);
+
 onMounted(async () => {
   await init();
   await fetchPost();
   await fetchComments();
 });
 
-const currentUserUid = computed(() => user.value?.uid ?? null);
-
+// 投稿詳細取得
 const fetchPost = async () => {
   const data = await $fetch(`${config.API_URL}/posts/${route.params.id}`);
-
   post.value = {
     ...data,
     liked: data.likes.includes(currentUserUid.value),
   };
 };
 
+// コメント一覧取得
 const fetchComments = async () => {
   comments.value = await $fetch(
     `${config.API_URL}/posts/${route.params.id}/comments`
   );
 };
 
+// いいね
 const toggleLike = async () => {
   const token = await user.value.getIdToken();
 
@@ -111,6 +169,7 @@ const toggleLike = async () => {
   post.value.likeCount = res.likeCount;
 };
 
+// コメント投稿
 const submitComment = async () => {
   if (!commentText.value.trim()) return;
 
@@ -130,7 +189,66 @@ const submitComment = async () => {
   await fetchComments();
 };
 
-const deletePost = async () => {
+// ▼コメント編集関連
+const openEditModal = (comment) => {
+  editTarget.value = comment;
+  editText.value = comment.text;
+  showEditModal.value = true;
+};
+
+const confirmEdit = async () => {
+  if (!editText.value.trim()) return;
+
+  const token = await user.value.getIdToken();
+
+  await $fetch(
+    `${config.API_URL}/posts/${route.params.id}/comments/${editTarget.value.id}`,
+    {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: {
+        userId: user.value.uid,
+        text: editText.value,
+      },
+    }
+  );
+
+  showEditModal.value = false;
+  await fetchComments();
+};
+
+const cancelEdit = () => {
+  showEditModal.value = false;
+};
+
+// ▼コメント削除関連
+const openDeleteCommentModal = (comment) => {
+  deleteTargetComment.value = comment;
+  showDeleteCommentModal.value = true;
+};
+
+const confirmDeleteComment = async () => {
+  const token = await user.value.getIdToken();
+
+  await $fetch(
+    `${config.API_URL}/posts/${route.params.id}/comments/${deleteTargetComment.value.id}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+      body: { userId: user.value.uid },
+    }
+  );
+
+  showDeleteCommentModal.value = false;
+  await fetchComments();
+};
+
+// ▼投稿削除関連
+const openDeletePostModal = () => {
+  showDeletePostModal.value = true;
+};
+
+const confirmDeletePost = async () => {
   const token = await user.value.getIdToken();
 
   await $fetch(`${config.API_URL}/posts/${route.params.id}`, {
@@ -144,18 +262,12 @@ const deletePost = async () => {
 </script>
 
 <style scoped>
-.detail-container {
-
-}
-
-/* ページタイトル */
 .page-title {
   font-size: 22px;
   font-weight: bold;
   margin-bottom: 10px;
 }
 
-/* 投稿ブロック */
 .post-block {
   border-bottom: 1px solid #555;
   padding-bottom: 10px;
@@ -199,20 +311,28 @@ const deletePost = async () => {
   font-size: 16px;
 }
 
-/* コメントタイトル */
 .comment-title {
   border-top: 1px solid #555;
   border-bottom: 1px solid #555;
   padding: 6px;
-  text-align: left;
   font-size: 16px;
   margin-bottom: 10px;
 }
 
-/* コメント一覧 */
 .comment-item {
   padding: 10px 0;
   border-bottom: 1px solid #555;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comment-icons {
+  display: flex;
+  gap: 10px;
 }
 
 .comment-user {
@@ -224,12 +344,10 @@ const deletePost = async () => {
   color: #ddd;
 }
 
-/* コメント入力フォーム */
 .comment-form {
   margin-top: 20px;
   display: flex;
   gap: 10px;
-  align-items: center;
 }
 
 .comment-input {
@@ -253,4 +371,3 @@ const deletePost = async () => {
   opacity: 0.9;
 }
 </style>
-

@@ -62,6 +62,7 @@ const sharePost = async () => {
   shareText.value = "";
 
   navigateTo("/", { replace: true });
+  window.location.reload();
 };
 </script>
 

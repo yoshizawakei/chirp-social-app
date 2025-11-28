@@ -1,4 +1,3 @@
-<!-- frontend/components/TweetItem.vue -->
 <template>
   <div class="tweet-item">
     <div class="tweet-header">

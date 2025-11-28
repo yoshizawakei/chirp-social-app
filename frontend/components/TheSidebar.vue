@@ -1,4 +1,3 @@
-<!-- frontend/components/TheSidebar.vue -->
 <template>
 <nav class="sidebar">
     <NuxtLink to="/" class="sidebar-item" exact-active-class="active">

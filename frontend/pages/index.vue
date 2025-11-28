@@ -16,10 +16,10 @@
                         <span>{{ post.likeCount }}</span>
                     </button>
 
-                    <!-- ❌ 削除 -->
+                    <!-- ❌ 削除（モーダルを開く） -->
                     <button
                         v-if="post.userId === currentUserUid"
-                        @click="deletePost(post.id)"
+                        @click="openDeleteModal(post.id)"
                         class="icon-btn"
                     >
                         <img src="/assets/images/cross.png" class="icon-img" />
@@ -39,6 +39,14 @@
             <div class="divider"></div>
         </div>
     </div>
+
+    <!-- ✔ 削除確認モーダル -->
+    <ConfirmModal
+        :visible="showConfirm"
+        message="この投稿を削除しますか？"
+        @confirm="confirmDelete"
+        @cancel="showConfirm = false"
+    />
 </template>
 
 <script setup>
@@ -58,7 +66,6 @@ const currentUserUid = computed(() => user.value?.uid ?? null);
 onMounted(async () => {
     posts.value = await $fetch(`${config.API_URL}/posts`);
 
-    // 自分が既にいいねしているかフラグ付け
     posts.value = posts.value.map((p) => ({
         ...p,
         liked: p.likes.includes(currentUserUid.value),
@@ -82,18 +89,30 @@ const toggleLike = async (id) => {
     posts.value[index].likeCount = res.likeCount;
 };
 
-// ★★★ 削除機能（必須）★★★
-const deletePost = async (id) => {
+
+// --------------------------
+//     削除モーダル部分
+// --------------------------
+const showConfirm = ref(false);
+const deleteTargetId = ref(null);
+
+const openDeleteModal = (id) => {
+    deleteTargetId.value = id;
+    showConfirm.value = true;
+};
+
+const confirmDelete = async () => {
     const token = await user.value.getIdToken();
 
-    await $fetch(`${config.API_URL}/posts/${id}`, {
+    await $fetch(`${config.API_URL}/posts/${deleteTargetId.value}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
-        body: { userId: user.value.uid },
+        body: { userId: user.value.uid }
     });
 
-    posts.value = posts.value.filter((p) => p.id !== id);
-    };
+    posts.value = posts.value.filter((p) => p.id !== deleteTargetId.value);
+    showConfirm.value = false;
+};
 </script>
 
 <style scoped>
