@@ -1,14 +1,10 @@
-<script setup>
-import { useAuth } from "~/composables/useAuth";
-
-const { logout } = useAuth();
-
-onMounted(async () => {
-  await logout();
-  navigateTo("/login");
-});
-</script>
-
 <template>
   <div></div>
 </template>
+
+<script setup>
+const { logout } = useAuth()
+
+await logout()
+navigateTo('/login')
+</script>

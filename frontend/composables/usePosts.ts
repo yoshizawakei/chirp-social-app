@@ -1,4 +1,3 @@
-// frontend/composables/usePosts.ts
 import type { Ref } from 'vue'
 
 export type Post = {
