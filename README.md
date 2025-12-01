@@ -6,7 +6,7 @@
 ---
 
 ## ■ 作成した目的
-本アプリケーションは、**Nuxt.js（フロント）× Laravel（API）× Firebase Auth（認証）× Docker（環境構築）** を通して、実践な習得することを目的に作成しました。
+本アプリケーションは、**Nuxt.js（フロント）× Laravel（API）× Firebase Auth（認証）× Docker（環境構築）** を通して、実践的な学習をすることを目的に作成しました。
 
 ---
 
@@ -56,17 +56,17 @@ https://github.com/yoshizawakei/chirp-social-app.git
 ## ■ 使用技術（実行環境）
 
 ### フロントエンド
-- Nuxt.js 3.x
-- Vue.js 3（Composition API）
-- Pinia
-- Firebase Authentication
-- Vite
+- Nuxt.js 4.2.0
+- Vue.js 3.5.22（Composition API）
+- Pinia 3.0.3
+- Firebase Authentication 12.5.0
+- Vite 5系
 
 ### バックエンド
-- Laravel 10.x
-- PHP 8.x
+- Laravel 12.38.1
+- PHP 8.2.29
 - Laravel Sanctum
-- MySQL 8.x
+- MySQL 8.0.44
 
 ### 環境構築
 - Docker / Docker Compose
@@ -116,7 +116,7 @@ https://github.com/yoshizawakei/chirp-social-app.git
 ---
 
 ## ■ テーブル設計（画像）
-![DB](./images/db.png)
+![DB](images/tables_image.png)
 
 ---
 
@@ -154,15 +154,15 @@ npm run dev
 docker-compose exec backend bash
 composer install
 cp .env.example .env
-.env.exampleファイルから.envを作成し、環境変数を変更
 php artisan key:generate
 php artisan migrate --seed
 ```
+※ .env 内に MySQL の接続設定を記述します。
 
 ---
 
 ### 5. Firebase の環境変数設定（Nuxt）
-backendディレクトリ直下に`.env`を作成し、以下の内容を記述：
+backendディレクトリ直下に`.env`を作成し、以下の内容を記述します。
 
 ```
 NUXT_PUBLIC_FIREBASE_API_KEY=xxxx
