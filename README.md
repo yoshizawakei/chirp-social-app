@@ -134,13 +134,23 @@ git clone https://github.com/yoshizawakei/chirp-social-app.git
 
 ---
 
-### 2. Docker コンテナ起動
+### 2. Firebase Consoleの設定
+```
+Firebase Console（https://console.firebase.google.com/） にアクセスし、新しいプロジェクトを作成します。
+左メニューにある[プロジェクトの設定]（歯車アイコン） → サービスアカウントの「Firebase Admin SDK」タブを開き、
+「新しい秘密鍵を生成」をクリック。
+.jsonをダウンロードしたら、ファイル名をfirebase_credentialsに変更し、ルートディレクトリ直下に保存
+```
+
+---
+
+### 3. Docker コンテナ起動
 ```
 docker-compose up -d --build
 ```
 ---
 
-### 3. フロントエンド（Nuxt）
+### 4. フロントエンド（Nuxt）
 ```
 docker-compose exec frontend sh
 npm install
@@ -149,7 +159,7 @@ npm run dev
 
 ---
 
-### 4. バックエンド（Laravel）
+### 5. バックエンド（Laravel）
 ```
 docker-compose exec backend bash
 composer install
@@ -161,7 +171,7 @@ php artisan migrate --seed
 
 ---
 
-### 5. Firebase の環境変数設定（Nuxt）
+### 6. Firebase の環境変数設定（Nuxt）
 backendディレクトリ直下に`.env`を作成し、以下の内容を記述します。
 
 ```
