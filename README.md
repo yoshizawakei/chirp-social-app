@@ -206,6 +206,15 @@ NUXT_PUBLIC_FIREBASE_APP_ID=xxxx
 
 ---
 
+### 7. コンテナの再起動
+全ての設定が完了したら、一度コンテナを削除し、再度立ち上げる。
+```
+docker-compose down
+docker-compose up -d --build
+```
+
+---
+
 ## ■ テストユーザー（新規登録からご自身で作成してください。）
 ```
 ユーザー名：test1
