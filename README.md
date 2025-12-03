@@ -154,7 +154,7 @@ docker-compose up -d --build
 ```
 docker-compose exec frontend sh
 npm install
-npm run dev
+cp .env.example .env
 ```
 
 ---
@@ -167,7 +167,23 @@ cp .env.example .env
 php artisan key:generate
 php artisan migrate --seed
 ```
-※ .env 内に MySQL の接続設定を記述します。
+
+```
+`.env`内に MySQL等の接続設定を記述します。
+xxxxの部分は、docker-compose.ymlを参照。
+
+DB_CONNECTION=mysql
+DB_HOST=mysql_db
+DB_PORT=3306
+DB_DATABASE=xxxx
+DB_USERNAME=xxxx
+DB_PASSWORD=xxxx
+
+SANCTUM_STATEFUL_DOMAINS=localhost,localhost:3000
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+
+FIREBASE_CREDENTIALS=/var/www/html/firebase_credentials.json
+```
 
 ---
 
@@ -175,6 +191,8 @@ php artisan migrate --seed
 backendディレクトリ直下に`.env`を作成し、以下の内容を記述します。
 
 ```
+NUXT_PUBLIC_API_URL=http://localhost/api
+
 NUXT_PUBLIC_FIREBASE_API_KEY=xxxx
 NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN=xxxx
 NUXT_PUBLIC_FIREBASE_PROJECT_ID=xxxx
@@ -193,6 +211,8 @@ NUXT_PUBLIC_FIREBASE_APP_ID=xxxx
 ユーザー名：test1
 メール：test1@example.com
 パスワード：password
+
+```
 
 ```
 ユーザー名：test2ユーザー名
