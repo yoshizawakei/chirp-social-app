@@ -13,7 +13,7 @@ export type Post = {
 
 export const usePosts = () => {
     const config = useRuntimeConfig()
-    const baseURL = config.public.apiBase ?? 'http://localhost'
+    const baseURL = config.public.API_URL
 
     const posts = useState<Post[]>('posts:list', () => [])
     const loading = ref(false)

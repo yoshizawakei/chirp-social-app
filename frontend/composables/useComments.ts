@@ -10,7 +10,7 @@ export type Comment = {
 
 export const useComments = () => {
     const config = useRuntimeConfig()
-    const baseURL = config.public.apiBase ?? 'http://localhost'
+    const baseURL = config.public.API_URL
 
     const comments = useState<Comment[]>('comments:list', () => [])
     const loading = ref(false)
