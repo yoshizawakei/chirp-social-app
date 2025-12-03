@@ -164,6 +164,8 @@ cp .env.example .env
 docker-compose exec backend sh
 composer install
 cp .env.example .env
+※`.env`作成後は、以下の環境設定を行う。
+
 php artisan key:generate
 php artisan migrate --seed
 ```
@@ -224,7 +226,7 @@ docker-compose up -d --build
 ```
 
 ```
-ユーザー名：test2ユーザー名
+ユーザー名：test2
 メール：test2@example.com
 パスワード：password
 
