@@ -161,7 +161,7 @@ cp .env.example .env
 
 ### 5. バックエンド（Laravel）
 ```
-docker-compose exec backend bash
+docker-compose exec backend sh
 composer install
 cp .env.example .env
 php artisan key:generate
