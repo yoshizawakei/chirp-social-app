@@ -109,6 +109,104 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
+.register-page {
+  min-height: 100vh;
+  background-color: #0f1923;
+  color: #ffffff;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+    Arial, "ヒラギノ角ゴ ProN", "Hiragino Kaku Gothic ProN", "メイリオ",
+    Meiryo, sans-serif;
+}
+
+/* ロゴ */
+.logo {
+  position: absolute;
+  top: 24px;
+  left: 40px;
+  height: 40px;
+}
+
+/* 右上メニュー */
+.top-menu {
+  position: absolute;
+  top: 24px;
+  right: 40px;
+  display: flex;
+  gap: 24px;
+  font-size: 14px;
+}
+
+.menu-link {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.menu-link:hover {
+  text-decoration: underline;
+}
+
+/* カード */
+.card {
+  width: 420px;
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 10px;
+  padding: 32px 40px 36px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* タイトル */
+.card-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+/* フォーム */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #bdbdbd;
+  font-size: 14px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #7c4dff;
+}
+
+/* ボタン */
+.button-wrap {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.btn-register {
+  padding: 8px 32px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ffffff;
+  background: linear-gradient(90deg, #7c4dff, #4c6fff);
+  box-shadow: 0 4px 0 #3b3b3b;
+}
+
+.btn-register:hover {
+  opacity: 0.9;
+}
+
 .error-message {
   color: #e53935;
   font-size: 14px;
@@ -116,5 +214,3 @@ const handleRegister = async () => {
   text-align: center;
 }
 </style>
-
-<!-- 既存CSSはそのまま維持 -->
